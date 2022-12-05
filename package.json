@@ -1,15 +1,20 @@
 {
-  "name": "auto-vue-router",
-  "version": "1.0.0",
-  "description": "自动router, 基于vue3",
+  "name": "auto-router-vue3",
+  "version": "1.0.6",
+  "description": "生成router, 基于vue3",
   "main": "index.js",
   "type": "module",
-  "scripts": {
-    "auto-router": "node index"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TrainingSpring/npm-auto-vue-router.git"
+  },
+  "bin": {
+    "auto-router": "bin/index.js"
   },
   "author": "training",
   "license": "ISC",
   "dependencies": {
+    "commander": "^9.4.1",
     "vue": "^3.2.45",
     "watch": "^1.0.2"
   }
