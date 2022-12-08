@@ -90,7 +90,7 @@ export function analysisVue(filepath) {
  * @desc 解析路由配置
  * @param filepath 文件路径
  */
-export function analysisRouteConfig(filepath){
+function analysisRouteConfig(filepath){
     if (!filepath)return;
     let config = analysisVue(filepath);
     let abPath = filepath.replace(pages,"/pages").replaceAll("\\","/"); // 相对路径
@@ -105,20 +105,21 @@ export function analysisRouteConfig(filepath){
     }else if(config.route){
         if (config.route.path){ // 有path的情况
             res = config.route;
-        }else if (config.route.name){ // 没有path 有name的情况
-            routePathArr[routePathArr.length - 1] = encodeURI(config.route.name);
+        }else if (config.route.name != null){ // 没有path 有name的情况
+            let len = routePathArr.length;
+            routePathArr[len - 1] = encodeURI(config.route.name);
+            if (routePathArr[len-1] === "")routePathArr.pop();
             res = Object.assign({
                 path:routePathArr.join("/")
             },config.route);
         }else
-            Object.assign({
+            res = Object.assign({
                 path:routePath
             },config.route);
     }
     res["component"] = `$[()=>import('@${abPath}')]$`;
     return JSON.stringify(res).replace('"$[', "").replace(']$"', "");
 }
-
 /**
  * @desc 写入路由
  */
