@@ -1,6 +1,6 @@
 {
   "name": "auto-router-vue3",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "生成router, 基于vue3",
   "main": "index.js",
   "type": "module",
@@ -11,7 +11,7 @@
   "bin": {
     "auto-router": "bin/index.js"
   },
-  "author": "training",
+  "author": "Training",
   "license": "ISC",
   "dependencies": {
     "commander": "^9.4.1",

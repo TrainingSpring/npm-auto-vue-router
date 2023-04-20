@@ -3,10 +3,10 @@ import path from "path"
 import fs from "fs"
 import watch from "watch"
 import {fileURLToPath} from 'url';
+
 const __filename = fileURLToPath(import.meta.url); // 当前文件路径
 const __dirname = path.dirname(__filename); // 当前文件所处的文件夹路径
 const __dir = path.resolve();   // 执行命令时的路径
-console.log(__filename, __dirname);
 const pages = path.join(__dir, "/src/pages");
 const files = fs.readdirSync(pages);
 const routeDir = path.join(__dir,"src/router");
@@ -74,16 +74,47 @@ export function analysisVue(filepath) {
     if (!filepath)return ;
     const file = fs.readFileSync(filepath,{encoding:"utf-8"})
     const parseVue = parse(file);
-    let {content,setup} = compileScript(parseVue.descriptor,{
-        filename:path.basename(filepath),
-        id:GUID(),
-    });
-    // 解析content
-    let result = (new Function(`${content.replace("export default","return").trim()}`))();
-    if (setup){
-        result = result.setup([],{expose:()=>{}});
+    try {
+        // 因为在有些特殊情况下 , 比如在script标签中没有任何代码的情况下 , compileScript函数会报错 , 所以放在try中
+        let {content} = compileScript(parseVue.descriptor,{
+            filename:path.basename(filepath),
+            id:GUID(),
+        });
+        let lc = 0;
+        let power = false;
+        let configReg = /_config\s*=\s*/
+        let strCfg = "";
+        // 获取_config配置
+        try {
+            content.split("\n").forEach((item)=>{
+                // _config 字段
+                if (!power && configReg.test(item)){
+                    power = true;
+                }
+                if (!power)return ;
+                let strlen = item.length;
+                strCfg += item;
+                for (let i = 0 ;i < strlen;i++){
+                    let str = item[i];
+                    if (str === "{"){
+                        lc ++;
+                    }
+                    if(str === "}"){
+                        lc --;
+                    }
+                }
+                if (lc === 0){
+                    power = false;
+                    throw "break";
+                }
+            })
+        }catch (e){}
+        strCfg = strCfg.replace(/^(const|let).*_config\s*=\s*/,'return');
+        return (new Function(`${strCfg}`))();
+    }catch (e){
+        return null;
     }
-    return result._config;
+
 }
 
 /**
@@ -125,6 +156,7 @@ function analysisRouteConfig(filepath){
  */
 export function writeRouter(){
     let config = fs.readFileSync(path.join(__dirname,"template/route.js"),{encoding:"utf-8"});
+
     if (!fs.existsSync(routeDir))
         fs.mkdirSync(routeDir);
     if (!fs.existsSync(routeDir+"/index.js"))
@@ -136,8 +168,6 @@ export function writeRouter(){
         }
     }
     fs.writeFileSync(routeDir+"/config.js",`export default [\n\t${routes.join(",\n\t")}\n]`,{encoding:"utf-8"});
-
-
 }
 
 
