@@ -306,3 +306,23 @@ export function renderAll() {
     loopDir(files,pages); // 轮询目录 , 生成route配置
     writeRouter(); // 文件写入
 }
+// vite插件
+export function vitePluginVueAutoRouter(){
+    let config,command;
+    return {
+        name:"auto-router",
+        enforce: 'pre',
+        configResolved(resolvedConfig) {
+            config = resolvedConfig;
+            console.log(command)
+            if (command !== "build")
+                watchPages();
+            else
+                renderAll();
+        },
+        config(cfg, arg){
+            config = cfg;
+            command = arg.command;
+        }
+    }
+}
