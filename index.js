@@ -287,6 +287,7 @@ export function watchPages(){
         ignoreNotPermitted:true,
         ignoreDirectoryPattern:/(components|utils)/
     },function (f,cur,prev) {
+        if (typeof f =='string' && /(components|utils)/.test(f))return;
         if (typeof f == "object" && prev === null && cur === null) {
             renderAll()
             // 完成对树的遍历
