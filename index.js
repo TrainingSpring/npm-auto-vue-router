@@ -76,14 +76,14 @@ export function analysisVue(filepath) {
     const parseVue = parse(file);
     try {
         // 因为在有些特殊情况下 , 比如在script标签中没有任何代码的情况下 , compileScript函数会报错 , 所以放在try中
-        let {content} = compileScript(parseVue.descriptor,{
+        let {content,setup} = compileScript(parseVue.descriptor,{
             filename:path.basename(filepath),
             id:GUID(),
         });
         let lc = 0;
         let power = false;
-        let configReg = /_config\s*=\s*/
         let strCfg = "";
+        let configReg = setup?/_config\s*=\s*/:/_config\s*:\s*/;
         // 获取_config配置
         try {
             content.split("\n").forEach((item)=>{
@@ -109,9 +109,16 @@ export function analysisVue(filepath) {
                 }
             })
         }catch (e){}
-        strCfg = strCfg.replace(/^(const|let).*_config\s*=\s*/,'return');
-        return (new Function(`${strCfg}`))();
+
+        if (setup){
+            strCfg = strCfg.replace(/^(const|let).*_config\s*=\s*/,'return');
+            return (new Function(`${strCfg}`))();
+        }
+        else{
+            return (new Function(`return {${strCfg}}`))()._config;
+        }
     }catch (e){
+        console.log("error")
         return null;
     }
 
@@ -181,7 +188,8 @@ class CURD{
      * @param filePath
      */
     update(filePath) {
-        let prev = routesInfo[filePath]["data"].replace(/(\n)/g,"");
+        console.log("filePath",filePath);
+        let prev = routesInfo[filePath]["data"]?.replace(/(\n)/g,"");
         let cur = analysisRouteConfig(filePath);
         let cur_cs = cur.replace(/(\n)/g,"");
         const index = routesInfo[filePath]["index"];

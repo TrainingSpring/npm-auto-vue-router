@@ -1,6 +1,6 @@
 {
   "name": "auto-router-vue3",
-  "version": "1.0.15",
+  "version": "1.0.17",
   "description": "生成router, 基于vue3",
   "main": "index.js",
   "type": "module",
