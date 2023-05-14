@@ -8,8 +8,23 @@ npm install -g auto-router-vue3
 ```
 
 ## 使用方式
+> 后面应该会更新自定义文件夹渲染 , 但现在没有
 > 项目结构必须有: /src/pages文件夹 , 该pages文件夹下存放的是所有page
 > 然后调用 auto-router {param}方法即可
+> 其中 , components , utils 文件/文件夹是被忽略的 , 不会参与渲染
+
+## 在vite 中使用vitePluginVueAutoRouter插件
+
+使用该插件 , 可以在开发过程中实时渲染.
+
+```javascript
+export default ({mode})=>{
+  return defineConfig({
+    plugins: [vue(),
+      vitePluginVueAutoRouter()]
+  })
+}
+```
 
 ## 路由配置
 - 在.vue文件中 , export中, 添加
