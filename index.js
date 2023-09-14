@@ -93,7 +93,7 @@ export function analysisVue(filepath) {
                 }
                 if (!power)return ;
                 let strlen = item.length;
-                strCfg += item;
+                strCfg += (item+"\n");
                 for (let i = 0 ;i < strlen;i++){
                     let str = item[i];
                     if (str === "{"){
