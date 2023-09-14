@@ -25,7 +25,14 @@ export default ({mode})=>{
   })
 }
 ```
-
+## 由于导入的方式是用@方式导入 , 所以还要在vite.config中添加以下配置:
+```javascript
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
+  }
+```
 ## 路由配置
 - 在.vue文件中 , export中, 添加
   ```javascript
