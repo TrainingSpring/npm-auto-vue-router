@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "excludeDir": null,
+  "excludeReg": "((component(s)?)|(utils))",
+  "pagePath": "pages",
+  "type": "simple"
+}
