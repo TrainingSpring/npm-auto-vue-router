@@ -14,8 +14,15 @@ const __dirname=srcInfo.dirname;
  */
 export function setConfig(options){
     let config = getConfig();
+    options.version = Number(options.version);
     config = Object.assign(config,options);
+    if(options.excludeReg){
+        config.excludeDir = null;
+    }else if(options.excludeDir){
+        config.excludeReg = null;
+    }
     fs.writeFileSync(path.join(__dirname,"bin/config.json"),JSON.stringify(config),{encoding:'utf-8'});
+    return config;
 }
 
 /**
@@ -85,6 +92,9 @@ export function traverseFolder(dir,callback,result) {
             const fullPath = path.join(dir, dirent.name);
 
             if (dirent.isDirectory()) {
+                if (config.excludePath && config.excludePath.filter(e => fullPath.includes(path.join(e))).length){
+                    return callback(2,"Traversal complete. The src <" + fullPath + ">was excluded.")
+                }
                 if (config.excludeReg && (new RegExp(config.excludeReg)).test(dirent.name)){
                     return callback(2,"Traversal complete. The src <" + fullPath + ">was excluded.")
                 }else if(config.excludeDir && config.excludeDir.includes(dirent.name)){

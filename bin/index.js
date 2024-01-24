@@ -7,6 +7,7 @@ import path from "path"
 import config from "./config.json" assert {type:'json'}
 import {fileURLToPath} from 'url';
 import {watchPages} from "../v2.js";
+import {setConfig} from "../index.js";
 
 const __filename = fileURLToPath(import.meta.url); // 当前文件路径
 const __dirname = path.dirname(__filename); // 当前文件所处的文件夹路径
@@ -17,27 +18,18 @@ program.command("set")
     .option("-v,--version <version>", "设置vue版本")
     .option("-ed,--excludeDir <excludeDir>", "设置排除目录 , 以;隔开")
     .option("-er,--excludeReg <excludeReg>", "设置排除目录,正则字符串(有则优先)")
+    .option("-ep,--excludePath <excludePath>", "设置排除路径, 以;隔开")
     .option("-p,--pagePath <pagePath>", "设置页面目录")
     .option("-t,--type <type>", "设置渲染类型(simple,complex)")
     .description("配置信息").action(async (params,options)=>{
-        let {version,excludeDir,excludeReg,pagePath,type} = params;
-        if (version){
-            config.version = v = parseInt(version);
+        let {excludeDir,excludePath} = params;
+        if (excludePath){
+            params.excludePath = excludePath.split(";");
         }
         if (excludeDir){
-            config.excludeDir = excludeDir.split(";");
+            params.excludeDir = excludeDir.split(";");
         }
-        if (excludeReg){
-            config.excludeReg = excludeReg;
-        }
-        if (pagePath){
-            config.pagePath = pagePath;
-        }
-        if (type){
-            config.type = type;
-        }
-
-        fs.writeFileSync(path.join(__dirname,"config.json"),JSON.stringify(config),{encoding:'utf-8'});
+        config = setConfig(params);
 })
 
 program.command("render")

@@ -2,6 +2,7 @@
   "version": 2,
   "excludeDir": null,
   "excludeReg": "((component(s)?)|(utils))",
+  "excludePath": ["/Data/eduWork/answer"],
   "pagePath": "pages",
   "type": "simple"
 }

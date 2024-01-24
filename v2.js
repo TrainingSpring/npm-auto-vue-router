@@ -141,7 +141,9 @@ export function renderAll(){
             .replaceAll(']$"', "")
             .replaceAll("}","\n}")
             .replaceAll("]","\n]")
-            .replaceAll(",",",\n");
+            .replaceAll(",",",\n")
+            .replaceAll("[","[\n")
+            .replaceAll("{","{\n");
 
         writeRoute(str,routeConfig);
     })
