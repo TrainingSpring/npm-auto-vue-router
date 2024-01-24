@@ -1,17 +1,12 @@
 #!/usr/bin/env node
-import * as v3 from "../v3.js"
-import * as v2 from "../v2.js"
 import {program} from "commander"
-import fs from "fs"
 import path from "path"
-import config from "./config.json" assert {type:'json'}
 import {fileURLToPath} from 'url';
-import {watchPages} from "../v2.js";
-import {setConfig} from "../index.js";
+import {getConfig, setConfig} from "../comm.js";
 
 const __filename = fileURLToPath(import.meta.url); // 当前文件路径
 const __dirname = path.dirname(__filename); // 当前文件所处的文件夹路径
-
+let config = getConfig();
 let v = config.version;
 
 program.command("set")
@@ -29,21 +24,26 @@ program.command("set")
         if (excludeDir){
             params.excludeDir = excludeDir.split(";");
         }
-        config = setConfig(params);
+    config = setConfig(params);
 })
 
 program.command("render")
     .description("手动编译所有路由")
     .action(async (params,options)=>{
+        let model;
         switch (v){
             case 2:
-                v2.renderAll();
+                model = await import("../v2.js");
                 break
             case 3:
-                v3.renderAll();
+                model = await import("../v3.js");
                 break;
+            default:
+                console.log("版本设置错误！");
+                return;
 
         }
+        model.renderAll();
         // console.log(options);
     })
 program.command("watch")

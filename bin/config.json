@@ -1,8 +1,1 @@
-{
-  "version": 2,
-  "excludeDir": null,
-  "excludeReg": "((component(s)?)|(utils)|(route(r)?))",
-  "excludePath": null,
-  "pagePath": "pages",
-  "type": "simple"
-}
+{"version":2,"excludeDir":null,"excludeReg":"((component(s)?)|(utils)|(route(r)?))","excludePath":null,"pagePath":"views","type":"simple"}

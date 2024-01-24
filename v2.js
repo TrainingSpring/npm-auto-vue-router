@@ -2,7 +2,7 @@ import {compileScript, parse} from "vue/compiler-sfc"
 import path from "path"
 import fs from "fs"
 import watch from "watch"
-import {getConfig, getJsonFile, getSrcInfo, GUID, setConfig, traverseFolder} from "./index.js";
+import {getConfig, getJsonFile, getSrcInfo, GUID, setConfig, traverseFolder} from "./comm.js";
 import clipboardy from 'clipboardy';
 import {analysisVue} from "./v3.js";
 
@@ -99,7 +99,7 @@ function analysisRouteConfig(callback){
             // 当路由配置为被排除 ， 则不执行后续操作
             if (route.exclude)return result;
             let rePath = fullPath.replace(dir,path.join("/",config.pagePath)).replaceAll("\\","/"); // 相对路径
-            let routePath = rePath.replace("/pages","").replace(".vue",""); // 路由路径
+            let routePath = rePath.replace("/views","").replace(".vue",""); // 路由路径
 
             let p = isAbsolute(route.path)?route.path:path.posix.join(result.path,route.path);
             let child = {

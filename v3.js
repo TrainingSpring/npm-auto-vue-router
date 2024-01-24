@@ -2,14 +2,21 @@
 import path from "path"
 import fs from "fs"
 import watch from "watch"
-import {getSrcInfo,GUID} from "./index.js";
+import {getConfig, getSrcInfo, GUID} from "./comm.js";
 
+const _config = getConfig();
 const dirInfo = getSrcInfo();
 const __filename = dirInfo.filename; // 当前文件路径
 const __dirname = dirInfo.dirname; // 当前文件所处的文件夹路径
 const __dir = dirInfo.dir;   // 执行命令时的路径
-const pages = path.join(__dir, "/src/pages");
-const files = fs.readdirSync(pages);
+const pages = path.join(__dir, "/src",_config.pagePath);
+let files;
+try {
+    files = fs.readdirSync(pages);
+}catch (e){
+    throw new Error("未找到pages文件夹 ， 请确认是否配置正确。 尝试使用auto-router set -p <path> 重新设置页面目录！")
+}
+
 const routeDir = path.join(__dir,"src/router");
 const ignoreDirs = /(components|utils)/;
 
@@ -115,8 +122,8 @@ export function analysisVue(filepath) {
 function analysisRouteConfig(filepath){
     if (!filepath)return;
     let config = analysisVue(filepath);
-    let rePath = filepath.replace(pages,"/pages").replaceAll("\\","/"); // 相对路径
-    let routePath = rePath.replace("/pages","").replace(".vue",""); // 路由路径
+    let rePath = filepath.replace(pages,"/views").replaceAll("\\","/"); // 相对路径
+    let routePath = rePath.replace("/views","").replace(".vue",""); // 路由路径
     let routePathArr = routePath.split("/"); // 相对路径转数组
     let res = {};
     // 没有配置config的情况 or 没有配置route
