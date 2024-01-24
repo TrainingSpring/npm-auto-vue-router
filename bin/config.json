@@ -1,8 +1,8 @@
 {
   "version": 2,
   "excludeDir": null,
-  "excludeReg": "((component(s)?)|(utils))",
-  "excludePath": ["/Data/eduWork/answer"],
+  "excludeReg": "((component(s)?)|(utils)|(route(r)?))",
+  "excludePath": null,
   "pagePath": "pages",
   "type": "simple"
 }

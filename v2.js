@@ -75,24 +75,29 @@ function analysisRouteConfig(callback){
                     ...route,
                     path:p,
                 }
-                result.redirect = p;
                 if (result.children){
                     result.children.push(child)
-                }else result.children = [child];
+                }else {
+                    result.redirect = p;
+                    result.children = [child];
+                }
             }
             res = child;
         }
         // 文件处理
         else if(status === 1){
-            let route = analysisVue(fullPath);
+            let cfg = analysisVue(fullPath) || {};
+            let route = cfg.route;
             let name = info.name.split(".vue")[0];
-            if (!route){
+            if (!route ){
                 route = {
                     path:camelToDash(name).toLowerCase(),
                 }
             }else if(!route.path){
                 route.path = camelToDash(name).toLowerCase();
             }
+            // 当路由配置为被排除 ， 则不执行后续操作
+            if (route.exclude)return result;
             let rePath = fullPath.replace(dir,path.join("/",config.pagePath)).replaceAll("\\","/"); // 相对路径
             let routePath = rePath.replace("/pages","").replace(".vue",""); // 路由路径
 
@@ -106,7 +111,10 @@ function analysisRouteConfig(callback){
             result.redirect = p;
             if (result.children){
                 result.children.push(child)
-            }else result.children = [child];
+            }else{
+                result.redirect = p;
+                result.children = [child];
+            }
 
         }else{
             // console.info("[error:"+status+"]"+info)
