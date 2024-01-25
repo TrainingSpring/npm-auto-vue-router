@@ -27,6 +27,12 @@ program.command("set")
     config = setConfig(params);
 })
 
+program.command("get-config")
+    .description("获取配置信息")
+    .action(async ()=>{
+        console.log(JSON.stringify(getConfig()));
+    })
+
 program.command("render")
     .description("手动编译所有路由")
     .action(async (params,options)=>{
