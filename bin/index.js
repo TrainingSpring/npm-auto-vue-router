@@ -2,12 +2,18 @@
 import {program} from "commander"
 import path from "path"
 import {fileURLToPath} from 'url';
-import {getConfig, setConfig} from "../comm.js";
+import {getConfig, getJsonFile, setConfig} from "../comm.js";
 
 const __filename = fileURLToPath(import.meta.url); // 当前文件路径
 const __dirname = path.dirname(__filename); // 当前文件所处的文件夹路径
 let config = getConfig();
 let v = config.version;
+
+program.option("-v,--version","获取版本号")
+    .description("查看版本号").action(async ()=>{
+        let pkg = getJsonFile(path.join(__dirname,'../',"package.json"))
+        console.log(pkg.version)
+})
 
 program.command("set")
     .option("-v,--version <version>", "设置vue版本")
