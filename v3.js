@@ -56,7 +56,42 @@ export function loopDir(fls = [],p){
         }
     })
 }
+export function getConfigStr(content,setup = false){
+    let lc = 0;
+    let power = false;
+    let strCfg = "";
+    let configReg = setup?/_config\s*=\s*/:/_config\s*:\s*/;
+    // 获取_config配置
+    try {
+        content.split("\n").forEach((item)=>{
+            // _config 字段
+            if (!power && configReg.test(item)){
+                power = true;
+            }
+            if (!power)return ;
+            let strlen = item.length;
+            strCfg += (item+"\n");
+            for (let i = 0 ;i < strlen;i++){
+                let str = item[i];
+                if (str === "{"){
+                    lc ++;
+                }
+                if(str === "}"){
+                    lc --;
+                }
+            }
+            if (lc === 0){
+                power = false;
+                throw "break";
+            }
+        })
+    }catch (e){
+        if (e==="break")
+            return strCfg;
+        return null;
+    }
 
+}
 /**
  * @desc 解析vue文件
  * @param filepath 文件路径
@@ -71,35 +106,7 @@ export function analysisVue(filepath) {
             filename:path.basename(filepath),
             id:GUID(),
         });
-        let lc = 0;
-        let power = false;
-        let strCfg = "";
-        let configReg = setup?/_config\s*=\s*/:/_config\s*:\s*/;
-        // 获取_config配置
-        try {
-            content.split("\n").forEach((item)=>{
-                // _config 字段
-                if (!power && configReg.test(item)){
-                    power = true;
-                }
-                if (!power)return ;
-                let strlen = item.length;
-                strCfg += (item+"\n");
-                for (let i = 0 ;i < strlen;i++){
-                    let str = item[i];
-                    if (str === "{"){
-                        lc ++;
-                    }
-                    if(str === "}"){
-                        lc --;
-                    }
-                }
-                if (lc === 0){
-                    power = false;
-                    throw "break";
-                }
-            })
-        }catch (e){}
+        let strCfg = getConfigStr(content,setup);
 
         if (setup){
             strCfg = strCfg.replace(/^(const|let).*_config\s*=\s*/,'return');

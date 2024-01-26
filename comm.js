@@ -115,4 +115,43 @@ export function traverseFolder(dir,callback,result) {
         callback(2, 'Traversal complete');
     });
 }
+/**
+ * @description 深度优先遍历
+ * @param {Array,JSON} data 数据
+ * @param callback 回调
+ * @param options 配置
+ * @constructor
+ */
+export function DFS(data, callback = ()=>{}, options = {}) {
+    let _options = Object.assign({}, {
+        child: "data"
+    }, options);
+    let {
+        child
+    } = _options;
+    if (!!data) {
+        let stack = [];
+        if (Array.isArray(data))
+            for (let i = data.length - 1; i >= 0; i--) {
+                let item = data[i];
+                item._tier = 0;
+                stack.push(item);
+            }
+        else if (typeof data === "object") {
+            data._tier = 0;
+            stack.push(data);
 
+        }
+        while (stack.length > 0) {
+            let item = stack.pop();
+            let tier = item._tier;
+            tier++;
+            callback(item);
+            let children = item[child] || [];
+            for (let i = children.length - 1; i >= 0; i--) {
+                children[i]._tier = tier;
+                stack.push(children[i]);
+            }
+        }
+    }
+}
