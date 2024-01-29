@@ -106,26 +106,27 @@ function analysisRouteConfig(callback,dir,prePath="/"){
                     path:isAbsolute(route.path)?route.path:path.posix.join(prePath,route.path),
                     components:`$[()=>import('@${rePath}')]$`
                 })
-                return ;
+            }else{
+                let routePath = rePath.replace("/views","").replace(".vue",""); // 路由路径
+
+                let p = isAbsolute(route.path)?route.path:path.posix.join(result.path,route.path);
+                child = {
+                    ...route,
+                    path:p,
+                    components:`$[()=>import('@${rePath}')]$`
+                }
+
+                result.redirect = p;
+                if (result.children){
+                    result.children.push(child)
+                }else{
+                    result.redirect = p;
+                    result.children = [child];
+                }
+                data = child;
             }
 // 相对路径
-            let routePath = rePath.replace("/views","").replace(".vue",""); // 路由路径
 
-            let p = isAbsolute(route.path)?route.path:path.posix.join(result.path,route.path);
-            child = {
-                ...route,
-                path:p,
-                components:`$[()=>import('@${rePath}')]$`
-            }
-
-            result.redirect = p;
-            if (result.children){
-                result.children.push(child)
-            }else{
-                result.redirect = p;
-                result.children = [child];
-            }
-            data = child;
         }
         if (data) {
             map[fullPath] = data.path;
@@ -168,7 +169,7 @@ class CURD{
     getPath(src,child=""){
         let parentDir = path.dirname(src);
         let config = getJsonFile(path.join(src,"route.json"));
-        if(config == null){
+        if(config == null || !config.path){
             return "/"+child
         }
         if (config.path && config.path[0] === "/"){
@@ -210,10 +211,11 @@ class CURD{
             route.components = `$[renderComponent()]$`;
             callback(route,{filename:route.path});
         }else if (type === 2){
-            let prePath = this.getPath(info.dir);
+            let prePath = this.getPath(info.parentPath);
+
             analysisRouteConfig((routes,mapdb)=>{
                 callback(routes,mapdb);
-            },info.dir,prePath)
+            },info.parentPath,prePath)
         }
     }
     update(filename){
@@ -233,15 +235,15 @@ class CURD{
             if (type === 1)
                 prevCfg.parent.children[prevCfg.index] = res;
             else {
-                prevCfg.item.children = res;
+                prevCfg.parent.children = res;
             }
             writeRoute(JSON.stringify(route),routeConfig);
             map = {
                 ...map,
                 ...mapdb
             }
-            fs.writeFileSync(path.join(dataDir,"map.json"),JSON.stringify(map),{encoding:"utf-8"})
-            fs.writeFileSync(path.join(dataDir,"route.json"),JSON.stringify(route),{encoding:"utf-8"})
+            fs.writeFileSync(path.join(dataDir,"map.json"),JSON.stringify(map),{encoding:"utf-8"});
+            fs.writeFileSync(path.join(dataDir,"route.json"),JSON.stringify(route),{encoding:"utf-8"});
         });
     }
 }
@@ -279,8 +281,8 @@ function handleVueFile(){
 export function renderAll(){
 
     let curd = new CURD();
-    curd.update("H:\\npm-package\\auto-vue-router\\src\\views\\data\\exam-data\\route.json")
-    return ;
+    // curd.update("H:\\npm-package\\auto-vue-router\\src\\views\\data\\exam-data\\rank-stat\\route.json")
+    // return ;
     analysisRouteConfig((routes,map)=>{
         let str =JSON.stringify(routes)
             .replaceAll('"$[', "")
