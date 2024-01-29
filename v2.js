@@ -1,9 +1,8 @@
-import {compileScript, parse} from "vue/compiler-sfc"
 import path from "path"
 import fs from "fs"
 import watch from "watch"
-import {getConfig, getJsonFile, getSrcInfo, GUID, setConfig, traverseFolder} from "./comm.js";
-import {analysisVue, getConfigStr, loopDir, writeRouter} from "./v3.js";
+import {getConfig, getJsonFile, getSrcInfo, traverseFolder} from "./comm.js";
+import {analysisVue, getConfigStr} from "./v3.js";
 
 const dirInfo = getSrcInfo();
 const __filename = dirInfo.filename; // 当前文件路径
@@ -22,6 +21,26 @@ function camelToDash(str) {
 function isAbsolute(path) {
     return path[0] === "/";
 }
+// 根据路由配置获取指定的路由信息
+function getRoute(route,prePath="",srcName=""){
+    // 如果没有配置route信息  给默认配置路由
+    let p = "";
+    if (!route){
+        route = {};
+    }
+    if (!route.path){
+        p = camelToDash(srcName).toLowerCase();
+    }else{
+        p = route.path;
+    }
+    if (!isAbsolute(p)){
+        p = path.posix.join(prePath,p);
+    }
+
+    route.path = p;
+
+    return route;
+}
 let routeConfig = `
 // 渲染一个组件或者一个空组件
 export function renderComponent(component) {
@@ -32,12 +51,13 @@ export function renderComponent(component) {
   }
 }
 `
-function analysisRouteConfig(callback,dir,prePath="/"){
+function analysisRouteConfig(callback,dir,initResult=null){
     let routes = [];
     let timer = null;
     let config = getConfig();
     let map = {};
-    dir = dir || path.join(__dir,"src",config.pagePath);
+    let pagePath = path.join(__dir,"src",config.pagePath);
+    dir = dir || pagePath;
     traverseFolder(dir,function(status,info,fullPath,result){
         if (status !== 1 && status !== 0)return ;
 
@@ -50,35 +70,24 @@ function analysisRouteConfig(callback,dir,prePath="/"){
         if (status === 0){
             let route = getJsonFile(path.join(fullPath,"route.json"));
             let child = {}
+            route = getRoute(route,!result?"/":result.path,info.name);
 
-            // 如果没有配置route信息  给默认配置路由
-            if (!route){
-                route = {
-                    path:camelToDash(info.name).toLowerCase(),
-                }
-            }else if(!route.path){
-                route.path = camelToDash(info.name).toLowerCase();
-            }
             route.components = `$[renderComponent()]$`;
             // 如果没有result , 可以判定为根目录
             if (!result){
-                let p = path.posix.join(prePath,route.path)
                 child = {
                     ...route,
-                    path:p,
                 }
                 routes.push(child);
                 res = child;
             }else {
-                let p = isAbsolute(route.path)?route.path:path.posix.join(result.path,route.path);
                 child = {
                     ...route,
-                    path:p,
                 }
                 if (result.children){
                     result.children.push(child)
                 }else {
-                    result.redirect = p;
+                    result.redirect = route.path;
                     result.children = [child];
                 }
             }
@@ -89,43 +98,26 @@ function analysisRouteConfig(callback,dir,prePath="/"){
             let cfg = analysisVue(fullPath) || {};
             let route = cfg.route;
             let name = info.name.split(".vue")[0];
-            if (!route ){
-                route = {
-                    path:camelToDash(name).toLowerCase(),
-                }
-            }else if(!route.path){
-                route.path = camelToDash(name).toLowerCase();
-            }
+            route = getRoute(route,result.path,info.name)
             // 当路由配置为被排除 ， 则不执行后续操作
             if (route.exclude)return result;
             let child = {};
             let rePath = fullPath.replace(dir,path.join("/",config.pagePath)).replaceAll("\\","/");
-            if (!result){
-                routes.push({
-                    ...route,
-                    path:isAbsolute(route.path)?route.path:path.posix.join(prePath,route.path),
-                    components:`$[()=>import('@${rePath}')]$`
-                })
-            }else{
-                let routePath = rePath.replace("/views","").replace(".vue",""); // 路由路径
 
-                let p = isAbsolute(route.path)?route.path:path.posix.join(result.path,route.path);
-                child = {
-                    ...route,
-                    path:p,
-                    components:`$[()=>import('@${rePath}')]$`
-                }
-
-                result.redirect = p;
-                if (result.children){
-                    result.children.push(child)
-                }else{
-                    result.redirect = p;
-                    result.children = [child];
-                }
-                data = child;
+            child = {
+                ...route,
+                components:`$[()=>import('@${rePath}')]$`
             }
-// 相对路径
+
+            result.redirect = route.path;
+            if (result.children){
+                result.children.push(child)
+            }else{
+                result.redirect = route.path;
+                result.children = [child];
+            }
+            data = child;
+        // 相对路径
 
         }
         if (data) {
@@ -135,12 +127,17 @@ function analysisRouteConfig(callback,dir,prePath="/"){
             callback(routes,map);
         },20)
         return res;
-    })
+    },initResult)
 }
 
 
 class CURD{
+    sysConfig;
     constructor() {
+        this._getConfig();
+    }
+    _getConfig(){
+        this.sysConfig = getConfig();
     }
 
     _each(route,filename,parent){
@@ -169,9 +166,14 @@ class CURD{
     getPath(src,child=""){
         let parentDir = path.dirname(src);
         let config = getJsonFile(path.join(src,"route.json"));
-        if(config == null || !config.path){
-            return "/"+child
+        let root = path.join(__dirname,"src",this.sysConfig.pagePath);
+        if (root === src){
+            return "/"+child;
         }
+        if(config == null || !config.path){
+            let dirName = camelToDash(src.split("\\").pop());
+            return this.getPath(parentDir,path.posix.join(dirName,child))
+        }else
         if (config.path && config.path[0] === "/"){
             return path.posix.join(config.path , child);
         }else{
@@ -180,19 +182,20 @@ class CURD{
     }
     _getFileInfo(filename){
         let sp = filename.split("\\");
-        let fullName = sp.pop();
-        let name = fullName.replace(/\.\w+$/,"");
-        let dir = sp.join("\\");
-        sp.pop();
-        let parentPath = sp.join("\\");
+        let fullName = sp.pop(); // 文件全名
+        let name = fullName.replace(/\.\w+$/,""); // 文件名(去除后缀)
+        let dir = sp.join("\\"); // 文件所在目录
+        let dirName = sp.pop(); // 文件所在目录名
+        let parentPath = sp.join("\\"); // 父级目录路径
         return {
             parentPath,
             name,
             fullName,
-            dir
+            dir,
+            dirName
         }
     }
-    _renderRoute(filename,type,callback){
+    _renderRoute(filename,type,prevCfg,callback){
         let route = null;
         let info = this._getFileInfo(filename);
         if (type === 1){
@@ -212,10 +215,17 @@ class CURD{
             callback(route,{filename:route.path});
         }else if (type === 2){
             let prePath = this.getPath(info.parentPath);
-
+            let cfg = getRoute(getJsonFile(filename),undefined,info.dirName);
+            cfg.path = path.posix.join(prePath, cfg.path);
+            for (let k in cfg){
+                prevCfg.item[k] = cfg[k];
+            }
+            // 更改路由信息
+            prevCfg.item.children = [];
             analysisRouteConfig((routes,mapdb)=>{
+                mapdb[info.dir] = cfg.path;
                 callback(routes,mapdb);
-            },info.parentPath,prePath)
+            },info.dir,prevCfg.item)
         }
     }
     update(filename){
@@ -231,12 +241,10 @@ class CURD{
         let cur = type===1?map[filename]:map[path.dirname(filename)];
         // 更新前的配置
         let prevCfg = this._each(route,cur);
-        this._renderRoute(filename,type,(res,mapdb)=>{
+        this._renderRoute(filename,type,prevCfg,(res,mapdb)=>{
             if (type === 1)
                 prevCfg.parent.children[prevCfg.index] = res;
-            else {
-                prevCfg.parent.children = res;
-            }
+
             writeRoute(JSON.stringify(route),routeConfig);
             map = {
                 ...map,
@@ -279,10 +287,6 @@ function handleVueFile(){
 }
 
 export function renderAll(){
-
-    let curd = new CURD();
-    // curd.update("H:\\npm-package\\auto-vue-router\\src\\views\\data\\exam-data\\rank-stat\\route.json")
-    // return ;
     analysisRouteConfig((routes,map)=>{
         let str =JSON.stringify(routes)
             .replaceAll('"$[', "")
