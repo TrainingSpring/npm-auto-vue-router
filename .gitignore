@@ -3,3 +3,4 @@
 .idea
 /src/
 /data
+/bin/config.json

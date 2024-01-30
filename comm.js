@@ -31,7 +31,15 @@ export function setConfig(options){
  * @return {any}
  */
 export function getConfig() {
-    return getJsonFile(path.join(__dirname,"bin/config.json"));
+    let cfgPath = path.join(__dirname,"bin/config.json");
+    let cfg = getJsonFile(cfgPath);
+    if (cfg === null){
+        let res = {"excludeDir":null,"excludeReg":"((component(s)?)|(utils)|(route(r)?))","excludePath":null,"pagePath":"pages","type":"simple"};
+        setJsonFile(cfgPath,res);
+        return res;
+    }
+    return cfg
+
 }
 
 /**
@@ -45,6 +53,23 @@ export function getJsonFile(dir) {
         return JSON.parse(res);
     }catch (e){
         return null;
+    }
+}
+/**
+ * 从Json文件中获取JSON数据
+ * @param dir 路径
+ * @param data 数据
+ * @return {JSON}
+ */
+export function setJsonFile(dir,data) {
+    try {
+        if (typeof data !== "string"){
+            data = JSON.stringify(data);
+        }
+        fs.writeFileSync(dir,data,{encoding:'utf-8'});
+        return true;
+    }catch (e){
+        return false;
     }
 }
 /**
