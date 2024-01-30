@@ -72,7 +72,7 @@ function analysisRouteConfig(callback,dir,initResult=null){
             let child = {}
             route = getRoute(route,!result?"/":result.path,info.name);
 
-            route.components = `$[renderComponent()]$`;
+            route.component = `$[renderComponent()]$`;
             // 如果没有result , 可以判定为根目录
             if (!result){
                 child = {
@@ -106,7 +106,7 @@ function analysisRouteConfig(callback,dir,initResult=null){
 
             child = {
                 ...route,
-                components:`$[()=>import('@${rePath}')]$`
+                component:`$[()=>import('@${rePath}')]$`
             }
 
             result.redirect = route.path;
@@ -211,7 +211,7 @@ class CURD{
             }else if(route.path[0] !== "/"){
                 route.path = path.posix.join(pp,route.path);
             }
-            route.components = `$[renderComponent()]$`;
+            route.component = `$[renderComponent()]$`;
             callback(route,{filename:route.path});
         }else if (type === 2){
             let prePath = this.getPath(info.parentPath);
@@ -320,7 +320,7 @@ export function watchPages(){
         ignoreNotPermitted:true,
         ignoreDirectoryPattern:/(components|utils)/
     },function (f,cur,prev) {
-        if (typeof f =='string' && (/(components|utils)/.test(f) || /~$/.test(f)))return;
+        if (typeof f =='string' && (/(component|utils)/.test(f) || /~$/.test(f)))return;
         if (typeof f == "object" && prev === null && cur === null) {
             renderAll()
             // 完成对树的遍历
