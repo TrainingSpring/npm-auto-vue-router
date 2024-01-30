@@ -129,8 +129,8 @@ export function analysisVue(filepath) {
 function analysisRouteConfig(filepath){
     if (!filepath)return;
     let config = analysisVue(filepath);
-    let rePath = filepath.replace(pages,"/views").replaceAll("\\","/"); // 相对路径
-    let routePath = rePath.replace("/views","").replace(".vue",""); // 路由路径
+    let rePath = filepath.replace(pages,"/"+_config.pagePath).replaceAll("\\","/"); // 相对路径
+    let routePath = rePath.replace("/"+_config.pagePath,"").replace(".vue",""); // 路由路径
     let routePathArr = routePath.split("/"); // 相对路径转数组
     let res = {};
     // 没有配置config的情况 or 没有配置route
@@ -286,14 +286,23 @@ class CURD{
  */
 export function watchPages(){
     let curd = new CURD();
+    let exclude = _config.excludeReg?new RegExp(_config.excludeReg):null;
     watch.watchTree(pages,{
         interval:1,
         ignoreDotFiles:true,
         ignoreUnreadableDir:true,
         ignoreNotPermitted:true,
-        ignoreDirectoryPattern:/(components|utils)/
+        ignoreDirectoryPattern:exclude
     },function (f,cur,prev) {
-        if (typeof f =='string' && (/(components|utils)/.test(f) || /~$/.test(f)))return;
+        if (typeof f =='string') {
+            if (_config.excludePath && _config.excludePath.filter(e => f.includes(path.join(e))).length)
+                return;
+
+            if (exclude.test(f) || /~$/.test(f))
+                return;
+            else if(_config.excludeDir && _config.excludeDir.include(f))
+                return;
+        }
         if (typeof f == "object" && prev === null && cur === null) {
             renderAll()
             // 完成对树的遍历
