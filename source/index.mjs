@@ -3,9 +3,9 @@
 
 
 // vite插件
-import * as v3 from "./v3.js";
-import * as v2 from "./v2.js";
-import {getConfig, setConfig} from "./comm.js";
+import * as v3 from "./v3.mjs";
+import * as v2 from "./v2.mjs";
+import {getConfig, setConfig} from "./comm.mjs";
 import {exec, execSync, spawn} from "child_process";
 import path from "path";
 

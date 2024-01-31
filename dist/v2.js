@@ -172,7 +172,7 @@ var CURD = /*#__PURE__*/function () {
       var child = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
       var parentDir = _path["default"].dirname(src);
       var config = (0, _comm.getJsonFile)(_path["default"].join(src, "route.json"));
-      var root = _path["default"].join(_dirname, "src", this.sysConfig.pagePath);
+      var root = _path["default"].join(_dirname, "../", "src", this.sysConfig.pagePath);
       if (root === src) {
         return "/" + child;
       }
@@ -244,7 +244,7 @@ var CURD = /*#__PURE__*/function () {
     value: function update(filename) {
       var type = this.getPermission(filename);
       if (!type) return;
-      var dataDir = _path["default"].join(_dirname, "data");
+      var dataDir = _path["default"].join(_dirname, "../", "data");
       // 路由映射
       var map = (0, _comm.getJsonFile)(_path["default"].join(dataDir, "map.json"));
       // 路由配置
@@ -271,7 +271,7 @@ var CURD = /*#__PURE__*/function () {
 }();
 function writeRoute(content) {
   var extra = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
-  var config = _fs["default"].readFileSync(_path["default"].join(_dirname, "template/route.js"), {
+  var config = _fs["default"].readFileSync(_path["default"].join(_dirname, "../", "template/route.js"), {
     encoding: "utf-8"
   });
   if (!_fs["default"].existsSync(routeDir)) _fs["default"].mkdirSync(routeDir);
@@ -312,7 +312,7 @@ function handleVueFile() {
 function renderAll() {
   analysisRouteConfig(function (routes, map) {
     var str = JSON.stringify(routes).replaceAll('"$[', "").replaceAll(']$"', "").replaceAll("}", "\n}").replaceAll("]", "\n]").replaceAll(",\"", ",\n\"").replaceAll("[", "[\n").replaceAll("{", "{\n");
-    var dataPath = _path["default"].join(_dirname, "data");
+    var dataPath = _path["default"].join(_dirname, "../", "data");
     if (!_fs["default"].existsSync(dataPath)) _fs["default"].mkdirSync(dataPath);
     _fs["default"].writeFileSync(_path["default"].join(dataPath, "route.json"), JSON.stringify(routes), {
       encoding: "utf-8"

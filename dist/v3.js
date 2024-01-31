@@ -182,7 +182,7 @@ function analysisRouteConfig(filepath) {
  * @desc 写入路由
  */
 function writeRouter() {
-  var config = _fs["default"].readFileSync(_path["default"].join(_dirname, "template/route.js"), {
+  var config = _fs["default"].readFileSync(_path["default"].join(_dirname, "../", "template/route.js"), {
     encoding: "utf-8"
   });
   if (!_fs["default"].existsSync(routeDir)) _fs["default"].mkdirSync(routeDir);

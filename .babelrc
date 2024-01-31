@@ -8,5 +8,17 @@
     "bin",
     ".git",
     ".idea"
+  ],
+  "overrides": [
+    {
+      "test": "\\.mjs$",
+      "sourceType": "module",
+      "parserOpts": {
+        "sourceType": "module"
+      },
+      "generatorOpts": {
+        "filename": "[name].js"
+      }
+    }
   ]
 }

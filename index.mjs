@@ -3,9 +3,9 @@
 
 
 // vite插件
-import * as v3 from "./source/v3.js";
-import * as v2 from "./source/v2.js";
-import {getConfig, setConfig} from "./source/comm.js";
+import * as v3 from "./source/v3.mjs";
+import * as v2 from "./source/v2.mjs";
+import {getConfig, setConfig} from "./source/comm.mjs";
 
 
 

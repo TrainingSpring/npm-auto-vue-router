@@ -1,8 +1,8 @@
 import path from "path"
 import fs from "fs"
 import watch from "watch"
-import {getConfig, getJsonFile, getSrcInfo, traverseFolder} from "./comm.js";
-import {analysisVue, getConfigStr} from "./v3.js";
+import {getConfig, getJsonFile, getSrcInfo, traverseFolder} from "./comm.mjs";
+import {analysisVue, getConfigStr} from "./v3.mjs";
 
 const dirInfo = getSrcInfo();
 const __filename = dirInfo.filename; // 当前文件路径

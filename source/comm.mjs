@@ -3,8 +3,8 @@ import {fileURLToPath} from "url";
 import path from "path";
 import fs from "fs";
 const srcInfo = getSrcInfo();
-const __filename=srcInfo.filename;
-const __dirname=srcInfo.dirname;
+const filename=srcInfo.filename;
+const dirname=srcInfo.dirname;
 
 /**
  *  设置配置
@@ -21,7 +21,7 @@ export function setConfig(options){
     }else if(options.excludeDir){
         config.excludeReg = null;
     }
-    fs.writeFileSync(path.join(__dirname,"../","bin/config.json"),JSON.stringify(config),{encoding:'utf-8'});
+    fs.writeFileSync(path.join(dirname,"../","bin/config.json"),JSON.stringify(config),{encoding:'utf-8'});
     return config;
 }
 
@@ -30,7 +30,7 @@ export function setConfig(options){
  * @return {any}
  */
 export function getConfig() {
-    let cfgPath = path.join(__dirname,"../","bin/config.json");
+    let cfgPath = path.join(dirname,"../","bin/config.json");
     let cfg = getJsonFile(cfgPath);
     if (cfg == null){
         let res = {"excludeDir":null,"excludeReg":"((component(s)?)|(utils)|(route(r)?))","excludePath":null,"pagePath":"pages","type":"simple"};
@@ -76,14 +76,22 @@ export function setJsonFile(dir,data) {
  * @return {{filename: string, dir: string, dirname: string}}
  */
 export function getSrcInfo(){
-    let __filename = fileURLToPath(import.meta.url);
-    return {
-        filename: __filename, // 当前文件路径
-        dirname: path.dirname(__filename), // 当前文件所处的文件夹路径
-        dir: path.resolve()   // 执行命令时的路径
+    try{
+        return {
+            filename:__filename,
+            dirname:__dirname,
+            dir:path.resolve()
+        }
+    }
+    catch (e){
+        let __filename = fileURLToPath(import.meta.url);
+        return {
+            filename: __filename, // 当前文件路径
+            dirname: path.dirname(__filename), // 当前文件所处的文件夹路径
+            dir: path.resolve()   // 执行命令时的路径
+        }
     }
 }
-
 
 /**
  * @desc 生成GUID

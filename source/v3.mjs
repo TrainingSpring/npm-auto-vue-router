@@ -2,7 +2,7 @@
 import path from "path"
 import fs from "fs"
 import watch from "watch"
-import {getConfig, getSrcInfo, GUID} from "./comm.js";
+import {getConfig, getSrcInfo, GUID} from "./comm.mjs";
 
 const _config = getConfig();
 const dirInfo = getSrcInfo();

@@ -17,8 +17,8 @@ var _fs = _interopRequireDefault(require("fs"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); } // 获取路径信息
 var srcInfo = getSrcInfo();
-var _filename = srcInfo.filename;
-var _dirname = srcInfo.dirname;
+var filename = srcInfo.filename;
+var dirname = srcInfo.dirname;
 
 /**
  *  设置配置
@@ -35,8 +35,7 @@ function setConfig(options) {
   } else if (options.excludeDir) {
     config.excludeReg = null;
   }
-  // console.log(config);
-  _fs["default"].writeFileSync(_path["default"].join(_dirname, "bin/config.json"), JSON.stringify(config), {
+  _fs["default"].writeFileSync(_path["default"].join(dirname, "../", "bin/config.json"), JSON.stringify(config), {
     encoding: 'utf-8'
   });
   return config;
@@ -47,9 +46,9 @@ function setConfig(options) {
  * @return {any}
  */
 function getConfig() {
-  var cfgPath = _path["default"].join(_dirname, "bin/config.json");
+  var cfgPath = _path["default"].join(dirname, "../", "bin/config.json");
   var cfg = getJsonFile(cfgPath);
-  if (cfg === null) {
+  if (cfg == null) {
     var res = {
       "excludeDir": null,
       "excludeReg": "((component(s)?)|(utils)|(route(r)?))",
@@ -102,14 +101,22 @@ function setJsonFile(dir, data) {
  * @return {{filename: string, dir: string, dirname: string}}
  */
 function getSrcInfo() {
-  var __filename = (0, _url.fileURLToPath)(import.meta.url);
-  return {
-    filename: __filename,
-    // 当前文件路径
-    dirname: _path["default"].dirname(__filename),
-    // 当前文件所处的文件夹路径
-    dir: _path["default"].resolve() // 执行命令时的路径
-  };
+  try {
+    return {
+      filename: __filename,
+      dirname: __dirname,
+      dir: _path["default"].resolve()
+    };
+  } catch (e) {
+    var _filename = (0, _url.fileURLToPath)(import.meta.url);
+    return {
+      filename: _filename,
+      // 当前文件路径
+      dirname: _path["default"].dirname(_filename),
+      // 当前文件所处的文件夹路径
+      dir: _path["default"].resolve() // 执行命令时的路径
+    };
+  }
 }
 
 /**
