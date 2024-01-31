@@ -1,8 +1,9 @@
 {
   "name": "auto-router-vue3",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "生成router, 基于vue",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "index.js",
   "type": "module",
   "repository": {
     "type": "git",
@@ -11,6 +12,9 @@
   "bin": {
     "auto-router": "bin/index.js"
   },
+  "scripts": {
+    "build": "babel source -d dist/ --copy-files"
+  },
   "author": "Training",
   "license": "ISC",
   "dependencies": {
@@ -18,5 +22,11 @@
     "commander": "^9.4.1",
     "vue": "^3.2.45",
     "watch": "^1.0.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.23.9",
+    "@babel/plugin-transform-modules-commonjs": "^7.23.3",
+    "@babel/preset-env": "^7.23.9"
   }
 }
