@@ -160,7 +160,7 @@ function analysisRouteConfig(filepath){
  * @desc 写入路由
  */
 export function writeRouter(){
-    let config = fs.readFileSync(path.join(__dirname,"template/route.js"),{encoding:"utf-8"});
+    let config = fs.readFileSync(path.join(__dirname,"../","template/route.js"),{encoding:"utf-8"});
 
     if (!fs.existsSync(routeDir))
         fs.mkdirSync(routeDir);

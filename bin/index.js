@@ -21,6 +21,7 @@ program.command("set")
     .option("-p,--pagePath <pagePath>", "设置页面目录")
     .option("-t,--type <type>", "设置渲染类型(simple,complex)")
     .description("配置信息").action(async (params,options)=>{
+        console.log(config);
     let {excludeDir,excludePath} = params;
     if (excludePath){
         params.excludePath = excludePath.split(";");

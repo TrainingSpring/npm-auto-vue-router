@@ -21,8 +21,7 @@ export function setConfig(options){
     }else if(options.excludeDir){
         config.excludeReg = null;
     }
-    // console.log(config);
-    fs.writeFileSync(path.join(__dirname,"bin/config.json"),JSON.stringify(config),{encoding:'utf-8'});
+    fs.writeFileSync(path.join(__dirname,"../","bin/config.json"),JSON.stringify(config),{encoding:'utf-8'});
     return config;
 }
 
@@ -31,9 +30,9 @@ export function setConfig(options){
  * @return {any}
  */
 export function getConfig() {
-    let cfgPath = path.join(__dirname,"bin/config.json");
+    let cfgPath = path.join(__dirname,"../","bin/config.json");
     let cfg = getJsonFile(cfgPath);
-    if (cfg === null){
+    if (cfg == null){
         let res = {"excludeDir":null,"excludeReg":"((component(s)?)|(utils)|(route(r)?))","excludePath":null,"pagePath":"pages","type":"simple"};
         setJsonFile(cfgPath,res);
         return res;

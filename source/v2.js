@@ -166,7 +166,7 @@ class CURD{
     getPath(src,child=""){
         let parentDir = path.dirname(src);
         let config = getJsonFile(path.join(src,"route.json"));
-        let root = path.join(__dirname,"src",this.sysConfig.pagePath);
+        let root = path.join(__dirname,"../","src",this.sysConfig.pagePath);
         if (root === src){
             return "/"+child;
         }
@@ -231,7 +231,7 @@ class CURD{
     update(filename){
         let type = this.getPermission(filename);
         if (!type)return;
-        let dataDir = path.join(__dirname,"data");
+        let dataDir = path.join(__dirname,"../","data");
         // 路由映射
         let map = getJsonFile(path.join(dataDir,"map.json"));
         // 路由配置
@@ -257,7 +257,7 @@ class CURD{
 }
 
 function writeRoute(content,extra=""){
-    let config = fs.readFileSync(path.join(__dirname,"template/route.js"),{encoding:"utf-8"});
+    let config = fs.readFileSync(path.join(__dirname,"../","template/route.js"),{encoding:"utf-8"});
     if (!fs.existsSync(routeDir))
         fs.mkdirSync(routeDir);
     if (!fs.existsSync(routeDir+"/index.js"))
@@ -297,7 +297,7 @@ export function renderAll(){
             .replaceAll("[","[\n")
             .replaceAll("{","{\n");
 
-        let dataPath = path.join(__dirname,"data")
+        let dataPath = path.join(__dirname,"../","data")
         if (!fs.existsSync(dataPath))
             fs.mkdirSync(dataPath);
         fs.writeFileSync(path.join(dataPath,"route.json"),JSON.stringify(routes),{encoding:"utf-8"});
