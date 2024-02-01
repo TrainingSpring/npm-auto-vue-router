@@ -84,10 +84,16 @@ function analysisRouteConfig(callback,dir,initResult=null){
                 child = {
                     ...route,
                 }
+
+                if (!result.redirect && !path.default){
+                    result.redirect = route.path;
+                }else if(path.default){
+                    result.redirect = route.path;
+                }
+
                 if (result.children){
                     result.children.push(child)
                 }else {
-                    result.redirect = route.path;
                     result.children = [child];
                 }
             }
@@ -108,12 +114,16 @@ function analysisRouteConfig(callback,dir,initResult=null){
                 ...route,
                 component:`$[()=>import('@${rePath}')]$`
             }
+            if (!result.redirect && !path.default){
+                result.redirect = route.path;
+            }else if(path.default){
+                result.redirect = route.path;
+            }
 
-            result.redirect = route.path;
+
             if (result.children){
                 result.children.push(child)
             }else{
-                result.redirect = route.path;
                 result.children = [child];
             }
             data = child;
@@ -195,6 +205,11 @@ class CURD{
             dirName
         }
     }
+    isSame(val,val1){
+        let v = JSON.stringify(val).replaceAll(/[\s\n]/g,"");
+        let v1 = JSON.stringify(val1).replaceAll(/[\s\n]/g,"");
+        return v === v1;
+    }
     _renderRoute(filename,type,prevCfg,callback){
         let route = null;
         let info = this._getFileInfo(filename);
@@ -202,7 +217,6 @@ class CURD{
             route = analysisVue(filename);
             route = route?route.route:null;
             let pp = this.getPath(info.dir)
-            let parent = getJsonFile(path.join(info.dir,"route.json"));
             // 如果没有配置route信息  给默认配置路由
             if (!route || !route.path){
                 route = {
@@ -212,7 +226,10 @@ class CURD{
                 route.path = path.posix.join(pp,route.path);
             }
             route.component = `$[renderComponent()]$`;
-            callback(route,{[filename]:route.path});
+            if (this.isSame(route,prevCfg.item)){
+                callback(null)
+            }else
+                callback(route,{[filename]:route.path});
         }else if (type === 2){
             let prePath = this.getPath(info.parentPath);
             let cfg = getRoute(getJsonFile(filename),undefined,info.dirName);
@@ -242,6 +259,7 @@ class CURD{
         // 更新前的配置
         let prevCfg = this._each(route,cur);
         this._renderRoute(filename,type,prevCfg,(res,mapdb)=>{
+            if (res === null)return;
             if (type === 1)
                 prevCfg.parent.children[prevCfg.index] = res;
 
@@ -252,6 +270,7 @@ class CURD{
             }
             fs.writeFileSync(path.join(dataDir,"map.json"),JSON.stringify(map),{encoding:"utf-8"});
             fs.writeFileSync(path.join(dataDir,"route.json"),JSON.stringify(route),{encoding:"utf-8"});
+            console.log("[auto-router] update:",filename);
         });
     }
 }
@@ -288,14 +307,14 @@ function handleVueFile(){
 
 export function renderAll(){
     analysisRouteConfig((routes,map)=>{
-        let str =JSON.stringify(routes)
-            .replaceAll('"$[', "")
+        let str =JSON.stringify(routes);
+            /*.replaceAll('"$[', "")
             .replaceAll(']$"', "")
             .replaceAll("}","\n}")
             .replaceAll("]","\n]")
             .replaceAll(",\"",",\n\"")
             .replaceAll("[","[\n")
-            .replaceAll("{","{\n");
+            .replaceAll("{","{\n");*/
 
         let dataPath = path.join(basename,"data")
         if (!fs.existsSync(dataPath))
@@ -329,7 +348,6 @@ export function watchPages(){
             renderAll()
         } else if (prev != null){
             curd.update(f);
-            console.log("watch file:",f);
         }
     })
 }

@@ -86,10 +86,14 @@ function analysisRouteConfig(callback, dir) {
         res = child;
       } else {
         child = _objectSpread({}, route);
+        if (!result.redirect && !_path["default"]["default"]) {
+          result.redirect = route.path;
+        } else if (_path["default"]["default"]) {
+          result.redirect = route.path;
+        }
         if (result.children) {
           result.children.push(child);
         } else {
-          result.redirect = route.path;
           result.children = [child];
         }
       }
@@ -108,11 +112,14 @@ function analysisRouteConfig(callback, dir) {
       _child = _objectSpread(_objectSpread({}, _route), {}, {
         component: "$[()=>import('@".concat(rePath, "')]$")
       });
-      result.redirect = _route.path;
+      if (!result.redirect && !_path["default"]["default"]) {
+        result.redirect = _route.path;
+      } else if (_path["default"]["default"]) {
+        result.redirect = _route.path;
+      }
       if (result.children) {
         result.children.push(_child);
       } else {
-        result.redirect = _route.path;
         result.children = [_child];
       }
       data = _child;
@@ -203,6 +210,13 @@ var CURD = /*#__PURE__*/function () {
       };
     }
   }, {
+    key: "isSame",
+    value: function isSame(val, val1) {
+      var v = JSON.stringify(val).replaceAll(/[\s\n]/g, "");
+      var v1 = JSON.stringify(val1).replaceAll(/[\s\n]/g, "");
+      return v === v1;
+    }
+  }, {
     key: "_renderRoute",
     value: function _renderRoute(filename, type, prevCfg, callback) {
       var route = null;
@@ -211,7 +225,6 @@ var CURD = /*#__PURE__*/function () {
         route = (0, _v.analysisVue)(filename);
         route = route ? route.route : null;
         var pp = this.getPath(info.dir);
-        var parent = (0, _comm.getJsonFile)(_path["default"].join(info.dir, "route.json"));
         // 如果没有配置route信息  给默认配置路由
         if (!route || !route.path) {
           route = {
@@ -221,7 +234,9 @@ var CURD = /*#__PURE__*/function () {
           route.path = _path["default"].posix.join(pp, route.path);
         }
         route.component = "$[renderComponent()]$";
-        callback(route, _defineProperty({}, filename, route.path));
+        if (this.isSame(route, prevCfg.item)) {
+          callback(null);
+        } else callback(route, _defineProperty({}, filename, route.path));
       } else if (type === 2) {
         var prePath = this.getPath(info.parentPath);
         var cfg = getRoute((0, _comm.getJsonFile)(filename), undefined, info.dirName);
@@ -253,6 +268,7 @@ var CURD = /*#__PURE__*/function () {
       // 更新前的配置
       var prevCfg = this._each(route, cur);
       this._renderRoute(filename, type, prevCfg, function (res, mapdb) {
+        if (res === null) return;
         if (type === 1) prevCfg.parent.children[prevCfg.index] = res;
         writeRoute(JSON.stringify(route), routeConfig);
         map = _objectSpread(_objectSpread({}, map), mapdb);
@@ -262,6 +278,7 @@ var CURD = /*#__PURE__*/function () {
         _fs["default"].writeFileSync(_path["default"].join(dataDir, "route.json"), JSON.stringify(route), {
           encoding: "utf-8"
         });
+        console.log("[auto-router] update:", filename);
       });
     }
   }]);
@@ -309,7 +326,15 @@ function handleVueFile() {
 }
 function renderAll() {
   analysisRouteConfig(function (routes, map) {
-    var str = JSON.stringify(routes).replaceAll('"$[', "").replaceAll(']$"', "").replaceAll("}", "\n}").replaceAll("]", "\n]").replaceAll(",\"", ",\n\"").replaceAll("[", "[\n").replaceAll("{", "{\n");
+    var str = JSON.stringify(routes);
+    /*.replaceAll('"$[', "")
+    .replaceAll(']$"', "")
+    .replaceAll("}","\n}")
+    .replaceAll("]","\n]")
+    .replaceAll(",\"",",\n\"")
+    .replaceAll("[","[\n")
+    .replaceAll("{","{\n");*/
+
     var dataPath = _path["default"].join(_comm.basename, "data");
     if (!_fs["default"].existsSync(dataPath)) _fs["default"].mkdirSync(dataPath);
     _fs["default"].writeFileSync(_path["default"].join(dataPath, "route.json"), JSON.stringify(routes), {
@@ -345,7 +370,6 @@ function watchPages() {
       renderAll();
     } else if (prev != null) {
       curd.update(f);
-      console.log("watch file:", f);
     }
   });
 }

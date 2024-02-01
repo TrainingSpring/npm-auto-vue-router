@@ -195,6 +195,7 @@ class CURD{
             routes[index] = cur;
             routesInfo[filePath]["data"] = cur;
             writeRouter();
+            console.log("[auto-router] update:",filePath);
         }
     }
     /**
@@ -213,6 +214,7 @@ class CURD{
             }
         }
         writeRouter();
+        console.log("[auto-router] delete:",filePath);
     }
 
     /**
@@ -244,6 +246,7 @@ class CURD{
         })
 
         writeRouter();
+        console.log("[auto-router] create:",filePath);
     }
 
     /**

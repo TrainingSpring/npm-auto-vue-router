@@ -8,10 +8,6 @@ const __filename = fileURLToPath(import.meta.url); // 当前文件路径
 const __dirname = path.dirname(__filename); // 当前文件所处的文件夹路径
 let config = getConfig();
 
-program.option("-v,--version","获取版本号")
-    .description("查看版本号").action(async ()=>{
-    let pkg = getJsonFile(path.join(__dirname,'../',"package.json"));
-})
 
 program.command("set")
     // .option("-v,--version <version>", "设置vue版本")
@@ -31,12 +27,19 @@ program.command("set")
     }
     config = setConfig(params);
 })
-program.option("-sc,--set-config <config>")
+program.option("-sc,--set-config <config>","设置配置")
+    .option("-v,--version","获取版本号")
     .description("统一配置信息")
     .action( async (params,options)=>{
-        let c = (new Function("return " + params.setConfig))();
-        let cfg = Object(c,config);
-        config = setConfig(cfg);
+        if (params.version){
+            let pkg = getJsonFile(path.join(__dirname,'../',"package.json"));
+            console.log(pkg.version);
+        }else if(params.setConfig){
+            let c = (new Function("return " + params.setConfig))();
+            let cfg = Object(c,config);
+            config = setConfig(cfg);
+        }
+
     })
 
 program.command("get-config")

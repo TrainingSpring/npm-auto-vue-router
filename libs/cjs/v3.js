@@ -224,6 +224,7 @@ var CURD = /*#__PURE__*/function () {
         routes[index] = cur;
         routesInfo[filePath]["data"] = cur;
         writeRouter();
+        console.log("[auto-router] update:", filePath);
       }
     }
     /**
@@ -245,6 +246,7 @@ var CURD = /*#__PURE__*/function () {
         }
       }
       writeRouter();
+      console.log("[auto-router] delete:", filePath);
     }
 
     /**
@@ -276,6 +278,7 @@ var CURD = /*#__PURE__*/function () {
         }
       });
       writeRouter();
+      console.log("[auto-router] create:", filePath);
     }
 
     /**
