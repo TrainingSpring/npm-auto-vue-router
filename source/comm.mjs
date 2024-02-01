@@ -113,6 +113,35 @@ export function GUID(format = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx") {
 }
 
 const config = getConfig();
+
+
+export function excludeCheck(fullPath){
+    let name = path.basename(fullPath);
+    if (name.split(".").length){
+        name = path.basename(path.dirname(fullPath));
+    }
+    if (config.excludePath && config.excludePath.filter(e => fullPath.includes(path.join(e))).length){
+        return {
+            flag:true,
+            msg:"Traversal complete. The src <" + fullPath + ">was excluded."
+        }
+    }
+    if (config.excludeReg && (new RegExp(config.excludeReg)).test(name)){
+        return {
+            flag:true,
+            msg:"Traversal complete. The src <" + fullPath + ">was excluded."
+        }
+    }else if(config.excludeDir && config.excludeDir.includes(name)){
+        return {
+            flag:true,
+            msg:"Traversal complete. The src <" + fullPath + ">was excluded."
+        }
+    }
+
+    return {
+        flag:false
+    }
+}
 /**
  * 遍历文件夹
  * @param dir 文件夹路径
@@ -126,14 +155,8 @@ export function traverseFolder(dir,callback,result) {
             const fullPath = path.join(dir, dirent.name);
 
             if (dirent.isDirectory()) {
-                if (config.excludePath && config.excludePath.filter(e => fullPath.includes(path.join(e))).length){
-                    return callback(2,"Traversal complete. The src <" + fullPath + ">was excluded.")
-                }
-                if (config.excludeReg && (new RegExp(config.excludeReg)).test(dirent.name)){
-                    return callback(2,"Traversal complete. The src <" + fullPath + ">was excluded.")
-                }else if(config.excludeDir && config.excludeDir.includes(dirent.name)){
-                    return callback(2,"Traversal complete. The src <" + fullPath + ">was excluded.")
-                }
+                let check = excludeCheck(fullPath)
+                if (check.flag)return callback(2,check.msg);
                 let res = callback(0,dirent,fullPath,result)
                 traverseFolder(fullPath, callback,res);
 

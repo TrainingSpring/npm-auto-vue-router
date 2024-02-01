@@ -1,7 +1,7 @@
 import path from "path"
 import fs from "fs"
 import watch from "watch"
-import {getConfig, getJsonFile, getSrcInfo, traverseFolder,basename} from "./comm.mjs";
+import {getConfig, getJsonFile, getSrcInfo, traverseFolder, basename, excludeCheck} from "./comm.mjs";
 import {analysisVue, getConfigStr} from "./v3.mjs";
 
 const dirInfo = getSrcInfo();
@@ -212,6 +212,7 @@ class CURD{
         let route = null;
         let info = this._getFileInfo(filename);
         if (type === 1){
+            let pagePath = path.join(__dir,"src",this.sysConfig.pagePath);
             route = analysisVue(filename);
             route = route?route.route:null;
             let pp = this.getPath(info.dir)
@@ -223,7 +224,8 @@ class CURD{
             }else if(route.path[0] !== "/"){
                 route.path = path.posix.join(pp,route.path);
             }
-            route.component = `$[renderComponent()]$`;
+            let rePath = filename.replace(pagePath,path.join("/",this.sysConfig.pagePath)).replaceAll("\\","/");
+            route.component = `$[()=>import('@${rePath}')]$`;
             if (this.isSame(route,prevCfg.item)){
                 callback(null)
             }else
@@ -338,12 +340,13 @@ export function watchPages(){
     let curd = new CURD();
     let config = getConfig();
     let dir = path.join(__dir,"src",config.pagePath);
+    let exclude = config.excludeReg?new RegExp(config.excludeReg):null;
     watch.watchTree(dir,{
         interval:1,
         ignoreDotFiles:true,
         ignoreUnreadableDir:true,
         ignoreNotPermitted:true,
-        ignoreDirectoryPattern:/(components|utils)/
+        ignoreDirectoryPattern:exclude
     },function (f,cur,prev) {
         if (typeof f =='string' && (/(component|utils)/.test(f) || /~$/.test(f)))return;
         if (typeof f == "object" && prev === null && cur === null) {
@@ -353,6 +356,8 @@ export function watchPages(){
             // f 被移除
             renderAll()
         } else if (prev != null){
+            let check = excludeCheck(f);
+            if (check.flag)return;
             curd.update(f);
         }
     })

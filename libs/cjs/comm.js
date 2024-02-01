@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.DFS = DFS;
 exports.GUID = GUID;
 exports.basename = void 0;
+exports.excludeCheck = excludeCheck;
 exports.getConfig = getConfig;
 exports.getJsonFile = getJsonFile;
 exports.getSrcInfo = getSrcInfo;
@@ -132,6 +133,34 @@ function GUID() {
   });
 }
 var config = getConfig();
+function excludeCheck(fullPath) {
+  var name = _path["default"].basename(fullPath);
+  if (name.split(".").length) {
+    name = _path["default"].basename(_path["default"].dirname(fullPath));
+  }
+  if (config.excludePath && config.excludePath.filter(function (e) {
+    return fullPath.includes(_path["default"].join(e));
+  }).length) {
+    return {
+      flag: true,
+      msg: "Traversal complete. The src <" + fullPath + ">was excluded."
+    };
+  }
+  if (config.excludeReg && new RegExp(config.excludeReg).test(name)) {
+    return {
+      flag: true,
+      msg: "Traversal complete. The src <" + fullPath + ">was excluded."
+    };
+  } else if (config.excludeDir && config.excludeDir.includes(name)) {
+    return {
+      flag: true,
+      msg: "Traversal complete. The src <" + fullPath + ">was excluded."
+    };
+  }
+  return {
+    flag: false
+  };
+}
 /**
  * 遍历文件夹
  * @param dir 文件夹路径
@@ -146,16 +175,8 @@ function traverseFolder(dir, callback, result) {
     dirs.forEach(function (dirent) {
       var fullPath = _path["default"].join(dir, dirent.name);
       if (dirent.isDirectory()) {
-        if (config.excludePath && config.excludePath.filter(function (e) {
-          return fullPath.includes(_path["default"].join(e));
-        }).length) {
-          return callback(2, "Traversal complete. The src <" + fullPath + ">was excluded.");
-        }
-        if (config.excludeReg && new RegExp(config.excludeReg).test(dirent.name)) {
-          return callback(2, "Traversal complete. The src <" + fullPath + ">was excluded.");
-        } else if (config.excludeDir && config.excludeDir.includes(dirent.name)) {
-          return callback(2, "Traversal complete. The src <" + fullPath + ">was excluded.");
-        }
+        var check = excludeCheck(fullPath);
+        if (check.flag) return callback(2, check.msg);
         var res = callback(0, dirent, fullPath, result);
         traverseFolder(fullPath, callback, res);
       } else {

@@ -220,6 +220,7 @@ var CURD = /*#__PURE__*/function () {
       var route = null;
       var info = this._getFileInfo(filename);
       if (type === 1) {
+        var pagePath = _path["default"].join(__dir, "src", this.sysConfig.pagePath);
         route = (0, _v.analysisVue)(filename);
         route = route ? route.route : null;
         var pp = this.getPath(info.dir);
@@ -231,7 +232,8 @@ var CURD = /*#__PURE__*/function () {
         } else if (route.path[0] !== "/") {
           route.path = _path["default"].posix.join(pp, route.path);
         }
-        route.component = "$[renderComponent()]$";
+        var rePath = filename.replace(pagePath, _path["default"].join("/", this.sysConfig.pagePath)).replaceAll("\\", "/");
+        route.component = "$[()=>import('@".concat(rePath, "')]$");
         if (this.isSame(route, prevCfg.item)) {
           callback(null);
         } else callback(route, _defineProperty({}, filename, route.path));
@@ -357,12 +359,13 @@ function watchPages() {
   var curd = new CURD();
   var config = (0, _comm.getConfig)();
   var dir = _path["default"].join(__dir, "src", config.pagePath);
+  var exclude = config.excludeReg ? new RegExp(config.excludeReg) : null;
   _watch["default"].watchTree(dir, {
     interval: 1,
     ignoreDotFiles: true,
     ignoreUnreadableDir: true,
     ignoreNotPermitted: true,
-    ignoreDirectoryPattern: /(components|utils)/
+    ignoreDirectoryPattern: exclude
   }, function (f, cur, prev) {
     if (typeof f == 'string' && (/(component|utils)/.test(f) || /~$/.test(f))) return;
     if (_typeof(f) == "object" && prev === null && cur === null) {
@@ -372,6 +375,8 @@ function watchPages() {
       // f 被移除
       renderAll();
     } else if (prev != null) {
+      var check = (0, _comm.excludeCheck)(f);
+      if (check.flag) return;
       curd.update(f);
     }
   });
