@@ -2,7 +2,7 @@
 import {program} from "commander"
 import path from "path"
 import {fileURLToPath} from 'url';
-import {getConfig, getJsonFile, setConfig} from "../source/comm.mjs";
+import {getConfig, getJsonFile, setConfig} from "../libs/es/comm.mjs";
 
 const __filename = fileURLToPath(import.meta.url); // 当前文件路径
 const __dirname = path.dirname(__filename); // 当前文件所处的文件夹路径
@@ -51,10 +51,10 @@ program.command("render")
         let model;
         switch (config.type){
             case "simple":
-                model = await import("../source/v3.mjs");
+                model = await import("../libs/es/v3.mjs");
                 break
             case "complex":
-                model = await import("../source/v2.mjs");
+                model = await import("../libs/es/v2.mjs");
                 break;
             default:
                 console.error("[error: render]编译类型设置错误！（simple | complex)");
@@ -71,10 +71,10 @@ program.command("watch")
         let model;
         switch (config.type){
             case "simple":
-                model = await import("../source/v3.mjs");
+                model = await import("../libs/es/v3.mjs");
                 break
             case "complex":
-                model = await import("../source/v2.mjs");
+                model = await import("../libs/es/v2.mjs");
                 break;
             default:
                 console.error("[error: render]编译类型设置错误！（simple | complex)");

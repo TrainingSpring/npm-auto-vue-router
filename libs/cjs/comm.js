@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.DFS = DFS;
 exports.GUID = GUID;
+exports.basename = void 0;
 exports.getConfig = getConfig;
 exports.getJsonFile = getJsonFile;
 exports.getSrcInfo = getSrcInfo;
@@ -19,7 +20,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 var srcInfo = getSrcInfo();
 var filename = srcInfo.filename;
 var dirname = srcInfo.dirname;
-
+var basename = exports.basename = _path["default"].join(dirname, "../../");
 /**
  *  设置配置
  * @param options
@@ -35,7 +36,7 @@ function setConfig(options) {
   } else if (options.excludeDir) {
     config.excludeReg = null;
   }
-  _fs["default"].writeFileSync(_path["default"].join(dirname, "../", "bin/config.json"), JSON.stringify(config), {
+  _fs["default"].writeFileSync(_path["default"].join(basename, "bin/config.json"), JSON.stringify(config), {
     encoding: 'utf-8'
   });
   return config;
@@ -46,7 +47,7 @@ function setConfig(options) {
  * @return {any}
  */
 function getConfig() {
-  var cfgPath = _path["default"].join(dirname, "../", "bin/config.json");
+  var cfgPath = _path["default"].join(basename, "bin/config.json");
   var cfg = getJsonFile(cfgPath);
   if (cfg == null) {
     var res = {

@@ -14,7 +14,6 @@ fs.readdir(libs, (err, files) => {
         let text = fs.readFileSync(fullPath,{encoding: "utf8"});
         text = text.replaceAll(".mjs",".js");
         text = compile(text,1);
-        console.log(text);
         fs.writeFileSync(fullPath,text,{encoding: "utf8"});
     });
 })

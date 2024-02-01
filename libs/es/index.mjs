@@ -61,6 +61,7 @@ export class WebpackPluginAutoRouter{
     }
     apply(compiler){
         let mode = compiler.options.mode; // development
+        console.log("mode:=========" , mode);
         if (mode === "development"){
             this.model.watchPages();
         }else{

@@ -5,7 +5,7 @@ import fs from "fs";
 const srcInfo = getSrcInfo();
 const filename=srcInfo.filename;
 const dirname=srcInfo.dirname;
-
+export const basename = path.join(dirname,"../../");
 /**
  *  设置配置
  * @param options
@@ -21,7 +21,7 @@ export function setConfig(options){
     }else if(options.excludeDir){
         config.excludeReg = null;
     }
-    fs.writeFileSync(path.join(dirname,"../","bin/config.json"),JSON.stringify(config),{encoding:'utf-8'});
+    fs.writeFileSync(path.join(basename,"bin/config.json"),JSON.stringify(config),{encoding:'utf-8'});
     return config;
 }
 
@@ -30,7 +30,7 @@ export function setConfig(options){
  * @return {any}
  */
 export function getConfig() {
-    let cfgPath = path.join(dirname,"../","bin/config.json");
+    let cfgPath = path.join(basename,"bin/config.json");
     let cfg = getJsonFile(cfgPath);
     if (cfg == null){
         let res = {"excludeDir":null,"excludeReg":"((component(s)?)|(utils)|(route(r)?))","excludePath":null,"pagePath":"pages","type":"simple"};

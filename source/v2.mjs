@@ -1,7 +1,7 @@
 import path from "path"
 import fs from "fs"
 import watch from "watch"
-import {getConfig, getJsonFile, getSrcInfo, traverseFolder} from "./comm.mjs";
+import {getConfig, getJsonFile, getSrcInfo, traverseFolder,basename} from "./comm.mjs";
 import {analysisVue, getConfigStr} from "./v3.mjs";
 
 const dirInfo = getSrcInfo();
@@ -166,7 +166,7 @@ class CURD{
     getPath(src,child=""){
         let parentDir = path.dirname(src);
         let config = getJsonFile(path.join(src,"route.json"));
-        let root = path.join(__dirname,"../","src",this.sysConfig.pagePath);
+        let root = path.join(__dir,"src",this.sysConfig.pagePath);
         if (root === src){
             return "/"+child;
         }
@@ -212,7 +212,7 @@ class CURD{
                 route.path = path.posix.join(pp,route.path);
             }
             route.component = `$[renderComponent()]$`;
-            callback(route,{filename:route.path});
+            callback(route,{[filename]:route.path});
         }else if (type === 2){
             let prePath = this.getPath(info.parentPath);
             let cfg = getRoute(getJsonFile(filename),undefined,info.dirName);
@@ -231,7 +231,7 @@ class CURD{
     update(filename){
         let type = this.getPermission(filename);
         if (!type)return;
-        let dataDir = path.join(__dirname,"../","data");
+        let dataDir = path.join(basename,"data");
         // 路由映射
         let map = getJsonFile(path.join(dataDir,"map.json"));
         // 路由配置
@@ -257,7 +257,7 @@ class CURD{
 }
 
 function writeRoute(content,extra=""){
-    let config = fs.readFileSync(path.join(__dirname,"../","template/route.js"),{encoding:"utf-8"});
+    let config = fs.readFileSync(path.join(basename,"template/route.js"),{encoding:"utf-8"});
     if (!fs.existsSync(routeDir))
         fs.mkdirSync(routeDir);
     if (!fs.existsSync(routeDir+"/index.js"))
@@ -297,7 +297,7 @@ export function renderAll(){
             .replaceAll("[","[\n")
             .replaceAll("{","{\n");
 
-        let dataPath = path.join(__dirname,"../","data")
+        let dataPath = path.join(basename,"data")
         if (!fs.existsSync(dataPath))
             fs.mkdirSync(dataPath);
         fs.writeFileSync(path.join(dataPath,"route.json"),JSON.stringify(routes),{encoding:"utf-8"});
@@ -329,6 +329,7 @@ export function watchPages(){
             renderAll()
         } else if (prev != null){
             curd.update(f);
+            console.log("watch file:",f);
         }
     })
 }
