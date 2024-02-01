@@ -2,15 +2,22 @@
   "name": "auto-router-vue3",
   "version": "1.2.12",
   "description": "生成router, 基于vue",
-  "main": "dist/common/index.js",
-  "module": "dist/es6/index.mjs",
+  "main": "libs/cjs/index.js",
+  "module": "libs/es/index.mjs",
   "exports": {
     ".": "index.js",
-    "./dist": {
+    "./libs": {
       "import": ".",
-      "require": "./dist/common/index.js"
+      "require": "./libs/cjs/index.js"
     }
   },
+  "files": [
+    "libs",
+    "bin",
+    "package.json",
+    "template",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/TrainingSpring/npm-auto-vue-router.git"
@@ -19,7 +26,7 @@
     "auto-router": "bin/index.mjs"
   },
   "scripts": {
-    "build": "babel source -d dist/common/ --copy-files --extensions .mjs && node script.js"
+    "build": "babel source -d libs/cjs/ --copy-files --extensions .mjs && node script.js"
   },
   "author": "Training",
   "license": "ISC",

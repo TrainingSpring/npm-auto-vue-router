@@ -76,22 +76,22 @@ export function setJsonFile(dir,data) {
  * @return {{filename: string, dir: string, dirname: string}}
  */
 export function getSrcInfo(){
-    // #es6
+    // #es
     let __filename = fileURLToPath(import.meta.url);
     return {
         filename: __filename, // 当前文件路径
         dirname: path.dirname(__filename), // 当前文件所处的文件夹路径
         dir: path.resolve()   // 执行命令时的路径
     }
-    // #es6 END
+    // #es END
 
-    // #commonJS
+    // #cjs
     return {
         filename:__filename,
         dirname:__dirname,
         dir:path.resolve()
     }
-    // #commonJS END
+    // #cjs END
 }
 
 /**
