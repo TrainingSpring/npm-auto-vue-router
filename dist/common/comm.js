@@ -101,22 +101,15 @@ function setJsonFile(dir, data) {
  * @return {{filename: string, dir: string, dirname: string}}
  */
 function getSrcInfo() {
-  try {
-    return {
-      filename: __filename,
-      dirname: __dirname,
-      dir: _path["default"].resolve()
-    };
-  } catch (e) {
-    var _filename = (0, _url.fileURLToPath)(import.meta.url);
-    return {
-      filename: _filename,
-      // 当前文件路径
-      dirname: _path["default"].dirname(_filename),
-      // 当前文件所处的文件夹路径
-      dir: _path["default"].resolve() // 执行命令时的路径
-    };
-  }
+  
+
+  
+  return {
+    filename: __filename,
+    dirname: __dirname,
+    dir: _path["default"].resolve()
+  };
+  
 }
 
 /**

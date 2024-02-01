@@ -27,7 +27,7 @@ function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key i
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : String(i); }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 var _config = (0, _comm.getConfig)();
-var dirInfo = (0, _comm.getSrcInfo)();
+var dirInfo = (0, _comm.getSrcInfo.bind(null,'commJS'))();
 var _filename = dirInfo.filename; // 当前文件路径
 var _dirname = dirInfo.dirname; // 当前文件所处的文件夹路径
 var __dir = dirInfo.dir; // 执行命令时的路径

@@ -1,14 +1,14 @@
 {
   "name": "auto-router-vue3",
-  "version": "1.2.10",
+  "version": "1.2.11",
   "description": "生成router, 基于vue",
-  "main": "dist/index.js",
-  "module": "index.mjs",
+  "main": "dist/common/index.js",
+  "module": "dist/es6/index.mjs",
   "exports": {
     ".": "index.js",
     "./dist": {
       "import": ".",
-      "require": "./dist/index.js"
+      "require": "./dist/common/index.js"
     }
   },
   "repository": {
@@ -19,13 +19,14 @@
     "auto-router": "bin/index.mjs"
   },
   "scripts": {
-    "build": "babel source -d dist/ --copy-files --extensions .mjs && node script.js"
+    "build": "babel source -d dist/common/ --copy-files --extensions .mjs && node script.js"
   },
   "author": "Training",
   "license": "ISC",
   "dependencies": {
     "clipboardy": "^4.0.0",
     "commander": "^9.4.1",
+    "fs-extra": "^10.0.1",
     "vue": "^3.2.45",
     "watch": "^1.0.2"
   },
