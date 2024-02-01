@@ -11,11 +11,7 @@ const __dirname = dirInfo.dirname; // 当前文件所处的文件夹路径
 const __dir = dirInfo.dir;   // 执行命令时的路径
 const pages = path.join(__dir, "/src",_config.pagePath);
 let files;
-try {
-    files = fs.readdirSync(pages);
-}catch (e){
-    throw new Error("未找到pages文件夹 ， 请确认是否配置正确。 尝试使用auto-router set -p <path> 重新设置页面目录！")
-}
+
 
 const routeDir = path.join(__dir,"src/router");
 const ignoreDirs = /(components|utils)/;
@@ -288,6 +284,11 @@ class CURD{
  * @desc 监听pages目录
  */
 export function watchPages(){
+    try {
+        files = fs.readdirSync(pages);
+    }catch (e){
+        throw new Error("未找到pages文件夹 ， 请确认是否配置正确。 尝试使用auto-router set -p <path> 重新设置页面目录！")
+    }
     let curd = new CURD();
     let exclude = _config.excludeReg?new RegExp(_config.excludeReg):null;
     watch.watchTree(pages,{
@@ -323,6 +324,11 @@ export function watchPages(){
 // 全部渲染pages
 export function renderAll() {
     console.log("render all ...")
+    try {
+        files = fs.readdirSync(pages);
+    }catch (e){
+        throw new Error("未找到pages文件夹 ， 请确认是否配置正确。 尝试使用auto-router set -p <path> 重新设置页面目录！")
+    }
     loopDir(files,pages); // 轮询目录 , 生成route配置
     writeRouter(); // 文件写入
 }

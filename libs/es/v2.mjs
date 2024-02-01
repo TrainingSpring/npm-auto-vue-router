@@ -85,15 +85,14 @@ function analysisRouteConfig(callback,dir,initResult=null){
                     ...route,
                 }
 
-                if (!result.redirect && !path.default){
-                    result.redirect = route.path;
-                }else if(path.default){
+                if(path.default){
                     result.redirect = route.path;
                 }
 
                 if (result.children){
                     result.children.push(child)
                 }else {
+                    result.redirect = route.path;
                     result.children = [child];
                 }
             }
@@ -114,9 +113,7 @@ function analysisRouteConfig(callback,dir,initResult=null){
                 ...route,
                 component:`$[()=>import('@${rePath}')]$`
             }
-            if (!result.redirect && !path.default){
-                result.redirect = route.path;
-            }else if(path.default){
+            if(path.default){
                 result.redirect = route.path;
             }
 
@@ -124,6 +121,7 @@ function analysisRouteConfig(callback,dir,initResult=null){
             if (result.children){
                 result.children.push(child)
             }else{
+                result.redirect = route.path;
                 result.children = [child];
             }
             data = child;
@@ -260,10 +258,14 @@ class CURD{
         let prevCfg = this._each(route,cur);
         this._renderRoute(filename,type,prevCfg,(res,mapdb)=>{
             if (res === null)return;
-            if (type === 1)
+            if (type === 1) {
                 prevCfg.parent.children[prevCfg.index] = res;
+                if (res.default || prevCfg.index == 0){
+                    prevCfg.parent.redirect = res.path;
+                }
+            }
 
-            writeRoute(JSON.stringify(route),routeConfig);
+            writeRoute(handleRoutes(route),routeConfig);
             map = {
                 ...map,
                 ...mapdb
@@ -305,16 +307,20 @@ function handleVueFile(){
     })
 }
 
+function handleRoutes(routes){
+    return JSON.stringify(routes)
+        .replaceAll('"$[', "")
+        .replaceAll(']$"', "")
+    /*.replaceAll("}","\n}")
+    .replaceAll("]","\n]")
+    .replaceAll(",\"",",\n\"")
+    .replaceAll("[","[\n")
+    .replaceAll("{","{\n");*/
+}
+
 export function renderAll(){
     analysisRouteConfig((routes,map)=>{
-        let str =JSON.stringify(routes);
-            /*.replaceAll('"$[', "")
-            .replaceAll(']$"', "")
-            .replaceAll("}","\n}")
-            .replaceAll("]","\n]")
-            .replaceAll(",\"",",\n\"")
-            .replaceAll("[","[\n")
-            .replaceAll("{","{\n");*/
+        let str = handleRoutes(routes);
 
         let dataPath = path.join(basename,"data")
         if (!fs.existsSync(dataPath))

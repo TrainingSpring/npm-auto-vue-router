@@ -86,14 +86,13 @@ function analysisRouteConfig(callback, dir) {
         res = child;
       } else {
         child = _objectSpread({}, route);
-        if (!result.redirect && !_path["default"]["default"]) {
-          result.redirect = route.path;
-        } else if (_path["default"]["default"]) {
+        if (_path["default"]["default"]) {
           result.redirect = route.path;
         }
         if (result.children) {
           result.children.push(child);
         } else {
+          result.redirect = route.path;
           result.children = [child];
         }
       }
@@ -112,14 +111,13 @@ function analysisRouteConfig(callback, dir) {
       _child = _objectSpread(_objectSpread({}, _route), {}, {
         component: "$[()=>import('@".concat(rePath, "')]$")
       });
-      if (!result.redirect && !_path["default"]["default"]) {
-        result.redirect = _route.path;
-      } else if (_path["default"]["default"]) {
+      if (_path["default"]["default"]) {
         result.redirect = _route.path;
       }
       if (result.children) {
         result.children.push(_child);
       } else {
+        result.redirect = _route.path;
         result.children = [_child];
       }
       data = _child;
@@ -269,8 +267,13 @@ var CURD = /*#__PURE__*/function () {
       var prevCfg = this._each(route, cur);
       this._renderRoute(filename, type, prevCfg, function (res, mapdb) {
         if (res === null) return;
-        if (type === 1) prevCfg.parent.children[prevCfg.index] = res;
-        writeRoute(JSON.stringify(route), routeConfig);
+        if (type === 1) {
+          prevCfg.parent.children[prevCfg.index] = res;
+          if (res["default"] || prevCfg.index == 0) {
+            prevCfg.parent.redirect = res.path;
+          }
+        }
+        writeRoute(handleRoutes(route), routeConfig);
         map = _objectSpread(_objectSpread({}, map), mapdb);
         _fs["default"].writeFileSync(_path["default"].join(dataDir, "map.json"), JSON.stringify(map), {
           encoding: "utf-8"
@@ -324,17 +327,17 @@ function handleVueFile() {
     }
   });
 }
+function handleRoutes(routes) {
+  return JSON.stringify(routes).replaceAll('"$[', "").replaceAll(']$"', "");
+  /*.replaceAll("}","\n}")
+  .replaceAll("]","\n]")
+  .replaceAll(",\"",",\n\"")
+  .replaceAll("[","[\n")
+  .replaceAll("{","{\n");*/
+}
 function renderAll() {
   analysisRouteConfig(function (routes, map) {
-    var str = JSON.stringify(routes);
-    /*.replaceAll('"$[', "")
-    .replaceAll(']$"', "")
-    .replaceAll("}","\n}")
-    .replaceAll("]","\n]")
-    .replaceAll(",\"",",\n\"")
-    .replaceAll("[","[\n")
-    .replaceAll("{","{\n");*/
-
+    var str = handleRoutes(routes);
     var dataPath = _path["default"].join(_comm.basename, "data");
     if (!_fs["default"].existsSync(dataPath)) _fs["default"].mkdirSync(dataPath);
     _fs["default"].writeFileSync(_path["default"].join(dataPath, "route.json"), JSON.stringify(routes), {

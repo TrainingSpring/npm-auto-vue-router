@@ -33,11 +33,6 @@ var _dirname = dirInfo.dirname; // 当前文件所处的文件夹路径
 var __dir = dirInfo.dir; // 执行命令时的路径
 var pages = _path["default"].join(__dir, "/src", _config.pagePath);
 var files;
-try {
-  files = _fs["default"].readdirSync(pages);
-} catch (e) {
-  throw new Error("未找到pages文件夹 ， 请确认是否配置正确。 尝试使用auto-router set -p <path> 重新设置页面目录！");
-}
 var routeDir = _path["default"].join(__dir, "src/router");
 var ignoreDirs = /(components|utils)/;
 
@@ -333,6 +328,11 @@ var CURD = /*#__PURE__*/function () {
  * @desc 监听pages目录
  */
 function watchPages() {
+  try {
+    files = _fs["default"].readdirSync(pages);
+  } catch (e) {
+    throw new Error("未找到pages文件夹 ， 请确认是否配置正确。 尝试使用auto-router set -p <path> 重新设置页面目录！");
+  }
   var curd = new CURD();
   var exclude = _config.excludeReg ? new RegExp(_config.excludeReg) : null;
   _watch["default"].watchTree(pages, {
@@ -365,6 +365,11 @@ function watchPages() {
 // 全部渲染pages
 function renderAll() {
   console.log("render all ...");
+  try {
+    files = _fs["default"].readdirSync(pages);
+  } catch (e) {
+    throw new Error("未找到pages文件夹 ， 请确认是否配置正确。 尝试使用auto-router set -p <path> 重新设置页面目录！");
+  }
   loopDir(files, pages); // 轮询目录 , 生成route配置
   writeRouter(); // 文件写入
 }
