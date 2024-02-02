@@ -33,13 +33,17 @@ function getRoute(route,prePath="",srcName=""){
     }else{
         p = route.path;
     }
+    let res = "";
     if (!isAbsolute(p)){
-        p = path.posix.join(prePath,p);
+        res = path.posix.join(prePath,p);
     }
 
-    route.path = p;
+    route.path = res;
 
-    return route;
+    return {
+        name:p,
+        route
+    };
 }
 let routeConfig = `
 // 渲染一个组件或者一个空组件
@@ -51,6 +55,7 @@ export function renderComponent(component) {
   }
 }
 `
+const defaultPre = "$$default$$";
 function analysisRouteConfig(callback,dir,initResult=null){
     let routes = [];
     let timer = null;
@@ -70,7 +75,7 @@ function analysisRouteConfig(callback,dir,initResult=null){
         if (status === 0){
             let route = getJsonFile(path.join(fullPath,"route.json"));
             let child = {}
-            route = getRoute(route,!result?"/":result.path,info.name);
+            route = getRoute(route,!result?"/":result.path,info.name).route;
 
             route.component = `$[renderComponent()]$`;
             // 如果没有result , 可以判定为根目录
@@ -85,7 +90,7 @@ function analysisRouteConfig(callback,dir,initResult=null){
                     ...route,
                 }
 
-                if(path.default){
+                if(route.default){
                     result.redirect = route.path;
                 }
 
@@ -101,36 +106,49 @@ function analysisRouteConfig(callback,dir,initResult=null){
         // 文件处理
         else if(status === 1){
             let cfg = analysisVue(fullPath) || {};
-            let route = cfg.route;
+            let _route = cfg.route;
             let name = info.name.split(".vue")[0];
-            route = getRoute(route,result.path,info.name)
-            // 当路由配置为被排除 ， 则不执行后续操作
-            if (route.exclude)return result;
-            let child = {};
-            let rePath = fullPath.replace(dir,path.join("/",config.pagePath)).replaceAll("\\","/");
+            const setRoute = (route)=>{
+                let routeInfo = getRoute(route,result.path,info.name);
+                route = routeInfo.route;
+                // 当路由配置为被排除 ， 则不执行后续操作
+                if (route.exclude)return result;
+                let child = {};
+                let rePath = fullPath.replace(dir,path.join("/",config.pagePath)).replaceAll("\\","/");
 
-            child = {
-                ...route,
-                component:`$[()=>import('@${rePath}')]$`
+                child = {
+                    ...route,
+                    component:`$[()=>import('@${rePath}')]$`
+                }
+
+                if(route.default){
+                    result.redirect = defaultPre+route.path;
+                }else if(!result.redirect || (!result.redirect.includes(defaultPre) && routeInfo.name === "list")){
+                    result.redirect = route.path;
+                }
+
+
+                if (result.children){
+                    result.children.push(child)
+                }else{
+                    result.children = [child];
+                }
+                return child;
             }
-            if(path.default){
-                result.redirect = route.path;
-            }
-
-
-            if (result.children){
-                result.children.push(child)
+            if (Array.isArray(_route)){
+                for (let i in _route){
+                    let route = setRoute(_route[i]);
+                }
             }else{
-                result.redirect = route.path;
-                result.children = [child];
+                setRoute(_route)
             }
-            data = child;
-        // 相对路径
+            // data = child;
+            // 相对路径
 
         }
-        if (data) {
+        /*if (data) {
             map[fullPath] = data.path;
-        }
+        }*/
         timer = setTimeout(()=>{
             callback(routes,map);
         },20)
@@ -313,6 +331,7 @@ function handleRoutes(routes){
     return JSON.stringify(routes)
         .replaceAll('"$[', "")
         .replaceAll(']$"', "")
+        .replaceAll(defaultPre,"")
     /*.replaceAll("}","\n}")
     .replaceAll("]","\n]")
     .replaceAll(",\"",",\n\"")
@@ -321,15 +340,17 @@ function handleRoutes(routes){
 }
 
 export function renderAll(){
+    console.log("[auto-router]: 正在渲染路由...");
     analysisRouteConfig((routes,map)=>{
         let str = handleRoutes(routes);
 
         let dataPath = path.join(basename,"data")
         if (!fs.existsSync(dataPath))
             fs.mkdirSync(dataPath);
-        fs.writeFileSync(path.join(dataPath,"route.json"),JSON.stringify(routes),{encoding:"utf-8"});
-        fs.writeFileSync(path.join(dataPath,"map.json"),JSON.stringify(map),{encoding:"utf-8"});
+        // fs.writeFileSync(path.join(dataPath,"route.json"),JSON.stringify(routes),{encoding:"utf-8"});
+        // fs.writeFileSync(path.join(dataPath,"map.json"),JSON.stringify(map),{encoding:"utf-8"});
         writeRoute(str,routeConfig);
+        console.log("[auto-router]: 渲染完成!!!");
     })
 }
 
@@ -352,13 +373,11 @@ export function watchPages(){
         if (typeof f == "object" && prev === null && cur === null) {
             renderAll()
             // 完成对树的遍历
-        } else if (cur.nlink === 0) {
-            // f 被移除
-            renderAll()
-        } else if (prev != null){
+        } else {
             let check = excludeCheck(f);
             if (check.flag)return;
-            curd.update(f);
+            // f 被移除 或者更名等
+            renderAll()
         }
     })
 }

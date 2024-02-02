@@ -51,13 +51,18 @@ function getRoute(route) {
   } else {
     p = route.path;
   }
+  var res = "";
   if (!isAbsolute(p)) {
-    p = _path["default"].posix.join(prePath, p);
+    res = _path["default"].posix.join(prePath, p);
   }
-  route.path = p;
-  return route;
+  route.path = res;
+  return {
+    name: p,
+    route: route
+  };
 }
 var routeConfig = "\n// \u6E32\u67D3\u4E00\u4E2A\u7EC4\u4EF6\u6216\u8005\u4E00\u4E2A\u7A7A\u7EC4\u4EF6\nexport function renderComponent(component) {\n  if (component)\n    return component\n  else return {\n    render: (e) => e(\"router-view\")\n  }\n}\n";
+var defaultPre = "$$default$$";
 function analysisRouteConfig(callback, dir) {
   var initResult = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
   var routes = [];
@@ -77,7 +82,7 @@ function analysisRouteConfig(callback, dir) {
     if (status === 0) {
       var route = (0, _comm.getJsonFile)(_path["default"].join(fullPath, "route.json"));
       var child = {};
-      route = getRoute(route, !result ? "/" : result.path, info.name);
+      route = getRoute(route, !result ? "/" : result.path, info.name).route;
       route.component = "$[renderComponent()]$";
       // 如果没有result , 可以判定为根目录
       if (!result) {
@@ -86,7 +91,7 @@ function analysisRouteConfig(callback, dir) {
         res = child;
       } else {
         child = _objectSpread({}, route);
-        if (_path["default"]["default"]) {
+        if (route["default"]) {
           result.redirect = route.path;
         }
         if (result.children) {
@@ -103,29 +108,41 @@ function analysisRouteConfig(callback, dir) {
       var cfg = (0, _v.analysisVue)(fullPath) || {};
       var _route = cfg.route;
       var name = info.name.split(".vue")[0];
-      _route = getRoute(_route, result.path, info.name);
-      // 当路由配置为被排除 ， 则不执行后续操作
-      if (_route.exclude) return result;
-      var _child = {};
-      var rePath = fullPath.replace(dir, _path["default"].join("/", config.pagePath)).replaceAll("\\", "/");
-      _child = _objectSpread(_objectSpread({}, _route), {}, {
-        component: "$[()=>import('@".concat(rePath, "')]$")
-      });
-      if (_path["default"]["default"]) {
-        result.redirect = _route.path;
-      }
-      if (result.children) {
-        result.children.push(_child);
+      var setRoute = function setRoute(route) {
+        var routeInfo = getRoute(route, result.path, info.name);
+        route = routeInfo.route;
+        // 当路由配置为被排除 ， 则不执行后续操作
+        if (route.exclude) return result;
+        var child = {};
+        var rePath = fullPath.replace(dir, _path["default"].join("/", config.pagePath)).replaceAll("\\", "/");
+        child = _objectSpread(_objectSpread({}, route), {}, {
+          component: "$[()=>import('@".concat(rePath, "')]$")
+        });
+        if (route["default"]) {
+          result.redirect = defaultPre + route.path;
+        } else if (!result.redirect || !result.redirect.includes(defaultPre) && routeInfo.name === "list") {
+          result.redirect = route.path;
+        }
+        if (result.children) {
+          result.children.push(child);
+        } else {
+          result.children = [child];
+        }
+        return child;
+      };
+      if (Array.isArray(_route)) {
+        for (var i in _route) {
+          var _route2 = setRoute(_route[i]);
+        }
       } else {
-        result.redirect = _route.path;
-        result.children = [_child];
+        setRoute(_route);
       }
-      data = _child;
+      // data = child;
       // 相对路径
     }
-    if (data) {
-      map[fullPath] = data.path;
-    }
+    /*if (data) {
+        map[fullPath] = data.path;
+    }*/
     timer = setTimeout(function () {
       callback(routes, map);
     }, 20);
@@ -330,7 +347,7 @@ function handleVueFile() {
   });
 }
 function handleRoutes(routes) {
-  return JSON.stringify(routes).replaceAll('"$[', "").replaceAll(']$"', "");
+  return JSON.stringify(routes).replaceAll('"$[', "").replaceAll(']$"', "").replaceAll(defaultPre, "");
   /*.replaceAll("}","\n}")
   .replaceAll("]","\n]")
   .replaceAll(",\"",",\n\"")
@@ -338,17 +355,15 @@ function handleRoutes(routes) {
   .replaceAll("{","{\n");*/
 }
 function renderAll() {
+  console.log("[auto-router]: 正在渲染路由...");
   analysisRouteConfig(function (routes, map) {
     var str = handleRoutes(routes);
     var dataPath = _path["default"].join(_comm.basename, "data");
     if (!_fs["default"].existsSync(dataPath)) _fs["default"].mkdirSync(dataPath);
-    _fs["default"].writeFileSync(_path["default"].join(dataPath, "route.json"), JSON.stringify(routes), {
-      encoding: "utf-8"
-    });
-    _fs["default"].writeFileSync(_path["default"].join(dataPath, "map.json"), JSON.stringify(map), {
-      encoding: "utf-8"
-    });
+    // fs.writeFileSync(path.join(dataPath,"route.json"),JSON.stringify(routes),{encoding:"utf-8"});
+    // fs.writeFileSync(path.join(dataPath,"map.json"),JSON.stringify(map),{encoding:"utf-8"});
     writeRoute(str, routeConfig);
+    console.log("[auto-router]: 渲染完成!!!");
   });
 }
 
@@ -371,13 +386,11 @@ function watchPages() {
     if (_typeof(f) == "object" && prev === null && cur === null) {
       renderAll();
       // 完成对树的遍历
-    } else if (cur.nlink === 0) {
-      // f 被移除
-      renderAll();
-    } else if (prev != null) {
+    } else {
       var check = (0, _comm.excludeCheck)(f);
       if (check.flag) return;
-      curd.update(f);
+      // f 被移除 或者更名等
+      renderAll();
     }
   });
 }

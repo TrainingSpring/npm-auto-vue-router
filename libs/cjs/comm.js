@@ -135,7 +135,7 @@ function GUID() {
 var config = getConfig();
 function excludeCheck(fullPath) {
   var name = _path["default"].basename(fullPath);
-  if (name.split(".").length) {
+  if (name.split(".").length > 1) {
     name = _path["default"].basename(_path["default"].dirname(fullPath));
   }
   if (config.excludePath && config.excludePath.filter(function (e) {

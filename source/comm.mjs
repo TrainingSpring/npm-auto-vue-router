@@ -117,7 +117,7 @@ const config = getConfig();
 
 export function excludeCheck(fullPath){
     let name = path.basename(fullPath);
-    if (name.split(".").length){
+    if (name.split(".").length > 1){
         name = path.basename(path.dirname(fullPath));
     }
     if (config.excludePath && config.excludePath.filter(e => fullPath.includes(path.join(e))).length){
