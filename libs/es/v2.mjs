@@ -36,7 +36,7 @@ function getRoute(route,prePath="",srcName=""){
     let res = "";
     if (!isAbsolute(p)){
         res = path.posix.join(prePath,p);
-    }
+    }else res = p;
 
     route.path = res;
 
@@ -75,6 +75,7 @@ function analysisRouteConfig(callback,dir,initResult=null){
         if (status === 0){
             let route = getJsonFile(path.join(fullPath,"route.json"));
             let child = {}
+            if (!route)return undefined;
             route = getRoute(route,!result?"/":result.path,info.name).route;
 
             route.component = `$[renderComponent()]$`;
@@ -109,7 +110,13 @@ function analysisRouteConfig(callback,dir,initResult=null){
             let _route = cfg.route;
             let name = info.name.split(".vue")[0];
             const setRoute = (route)=>{
-                let routeInfo = getRoute(route,result.path,info.name);
+                let res = result;
+                if (!res){
+                    res = {
+                        path:"/"
+                    };
+                }
+                let routeInfo = getRoute(route,res.path,info.name);
                 route = routeInfo.route;
                 // 当路由配置为被排除 ， 则不执行后续操作
                 if (route.exclude)return result;
@@ -122,13 +129,15 @@ function analysisRouteConfig(callback,dir,initResult=null){
                 }
 
                 if(route.default){
-                    result.redirect = defaultPre+route.path;
-                }else if(!result.redirect || (!result.redirect.includes(defaultPre) && routeInfo.name === "list")){
-                    result.redirect = route.path;
+                    res.redirect = defaultPre+route.path;
+                }else if(!res.redirect || (!res.redirect.includes(defaultPre) && routeInfo.name === "list")){
+                    res.redirect = route.path;
                 }
 
-
-                if (result.children){
+                if (!result){
+                    result = child;
+                    routes.push(child);
+                }else if (result.children){
                     result.children.push(child)
                 }else{
                     result.children = [child];
@@ -155,7 +164,6 @@ function analysisRouteConfig(callback,dir,initResult=null){
         return res;
     },initResult)
 }
-
 
 class CURD{
     sysConfig;

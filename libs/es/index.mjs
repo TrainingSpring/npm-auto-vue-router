@@ -54,6 +54,7 @@ export function vitePluginVueAutoRouter(options){
 }
 
 export class WebpackPluginAutoRouter{
+    watcher = false;
     constructor(options){
         let cfg = getModel(options);
         this.model = cfg.model;
@@ -61,7 +62,7 @@ export class WebpackPluginAutoRouter{
     }
     apply(compiler){
         let mode = compiler.options.mode; // development
-        console.log("mode:=========" , mode);
+        let $this = this;
         if (mode === "development"){
             this.model.watchPages();
         }else{

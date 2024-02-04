@@ -17,6 +17,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : String(i); }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } // vite插件
 /**
@@ -60,6 +61,7 @@ function vitePluginVueAutoRouter(options) {
 var WebpackPluginAutoRouter = exports.WebpackPluginAutoRouter = /*#__PURE__*/function () {
   function WebpackPluginAutoRouter(options) {
     _classCallCheck(this, WebpackPluginAutoRouter);
+    _defineProperty(this, "watcher", false);
     var cfg = getModel(options);
     this.model = cfg.model;
     this.config = cfg.config;
@@ -68,7 +70,7 @@ var WebpackPluginAutoRouter = exports.WebpackPluginAutoRouter = /*#__PURE__*/fun
     key: "apply",
     value: function apply(compiler) {
       var mode = compiler.options.mode; // development
-      console.log("mode:=========", mode);
+      var $this = this;
       if (mode === "development") {
         this.model.watchPages();
       } else {

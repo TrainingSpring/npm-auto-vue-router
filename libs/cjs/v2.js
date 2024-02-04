@@ -54,7 +54,7 @@ function getRoute(route) {
   var res = "";
   if (!isAbsolute(p)) {
     res = _path["default"].posix.join(prePath, p);
-  }
+  } else res = p;
   route.path = res;
   return {
     name: p,
@@ -82,6 +82,7 @@ function analysisRouteConfig(callback, dir) {
     if (status === 0) {
       var route = (0, _comm.getJsonFile)(_path["default"].join(fullPath, "route.json"));
       var child = {};
+      if (!route) return undefined;
       route = getRoute(route, !result ? "/" : result.path, info.name).route;
       route.component = "$[renderComponent()]$";
       // 如果没有result , 可以判定为根目录
@@ -109,7 +110,13 @@ function analysisRouteConfig(callback, dir) {
       var _route = cfg.route;
       var name = info.name.split(".vue")[0];
       var setRoute = function setRoute(route) {
-        var routeInfo = getRoute(route, result.path, info.name);
+        var res = result;
+        if (!res) {
+          res = {
+            path: "/"
+          };
+        }
+        var routeInfo = getRoute(route, res.path, info.name);
         route = routeInfo.route;
         // 当路由配置为被排除 ， 则不执行后续操作
         if (route.exclude) return result;
@@ -119,11 +126,14 @@ function analysisRouteConfig(callback, dir) {
           component: "$[()=>import('@".concat(rePath, "')]$")
         });
         if (route["default"]) {
-          result.redirect = defaultPre + route.path;
-        } else if (!result.redirect || !result.redirect.includes(defaultPre) && routeInfo.name === "list") {
-          result.redirect = route.path;
+          res.redirect = defaultPre + route.path;
+        } else if (!res.redirect || !res.redirect.includes(defaultPre) && routeInfo.name === "list") {
+          res.redirect = route.path;
         }
-        if (result.children) {
+        if (!result) {
+          result = child;
+          routes.push(child);
+        } else if (result.children) {
           result.children.push(child);
         } else {
           result.children = [child];
