@@ -68,6 +68,7 @@ function analysisRouteConfig(callback, dir) {
   var routes = [];
   var timer = null;
   var config = (0, _comm.getConfig)();
+  var defaultRedirect = new RegExp(config.defaultRedirect || "^list$");
   var map = {};
   var pagePath = _path["default"].join(__dir, "src", config.pagePath);
   dir = dir || pagePath;
@@ -127,7 +128,7 @@ function analysisRouteConfig(callback, dir) {
         });
         if (route["default"]) {
           res.redirect = defaultPre + route.path;
-        } else if (!res.redirect || !res.redirect.includes(defaultPre) && routeInfo.name === "list") {
+        } else if (!res.redirect || !res.redirect.includes(defaultPre) && defaultRedirect.test(routeInfo.name)) {
           res.redirect = route.path;
         }
         if (!result) {

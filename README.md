@@ -52,10 +52,10 @@ Options:
 |:---|:-------------|:-------------|:------------------------------------|:----------------------------------------|
 |excludeDir| null         | Array , null | 若不配置则,则为null; 排除配置中的路由地址, 优先级高      | ["src/views/Layout", "src/views/Login"] |
 |excludeReg| null         | String , null | 排除匹配的路由地址, 优先级中                     | "component(s)?"                         |
-|excludePath| null         | Array , null | 排除匹配的路径名 , 给不熟悉正则的人使用的 优先级低         | ["component", "components"]  |
-|pagePath| null         | String       | 页面所在的根目录                            |"pages"|
-|type| simple, complex | String        | 页面的渲染类型, simple: 单级路由, complex:多级路由 | "simple" |
-
+|excludePath| null         | Array , null | 排除匹配的路径名 , 给不熟悉正则的人使用的 优先级低         | ["component", "components"]             |
+|pagePath| null         | String       | 页面所在的根目录                            | "pages"                                 |
+|type| simple, complex | String        | 页面的渲染类型, simple: 单级路由, complex:多级路由 | "simple"                                |
+|defaultRedirect| list| String | 正则匹配文件名 ， 设置默认重定向地址| "^list$"                                |
 
 ## 在vite 中使用vitePluginVueAutoRouter插件
 

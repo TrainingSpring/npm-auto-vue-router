@@ -56,7 +56,8 @@ function getConfig() {
       "excludeReg": "((component(s)?)|(utils)|(route(r)?))",
       "excludePath": null,
       "pagePath": "pages",
-      "type": "simple"
+      "type": "simple",
+      defaultRedirect: "^list$"
     };
     setJsonFile(cfgPath, res);
     return res;

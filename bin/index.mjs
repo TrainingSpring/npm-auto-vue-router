@@ -16,6 +16,7 @@ program.command("set")
     .option("-ep,--excludePath <excludePath>", "设置排除路径, 以;隔开")
     .option("-p,--pagePath <pagePath>", "设置页面目录")
     .option("-t,--type <type>", "设置渲染类型(simple,complex)")
+    .option("-d,--defaultRedirect <defaultRedirect>", "设置默认的重定向位置!")
     .description("配置信息").action(async (params,options)=>{
         console.log(config);
     let {excludeDir,excludePath} = params;

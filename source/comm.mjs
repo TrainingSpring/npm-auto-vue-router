@@ -33,7 +33,7 @@ export function getConfig() {
     let cfgPath = path.join(basename,"bin/config.json");
     let cfg = getJsonFile(cfgPath);
     if (cfg == null){
-        let res = {"excludeDir":null,"excludeReg":"((component(s)?)|(utils)|(route(r)?))","excludePath":null,"pagePath":"pages","type":"simple"};
+        let res = {"excludeDir":null,"excludeReg":"((component(s)?)|(utils)|(route(r)?))","excludePath":null,"pagePath":"pages","type":"simple",defaultRedirect:"^list$"};
         setJsonFile(cfgPath,res);
         return res;
     }
