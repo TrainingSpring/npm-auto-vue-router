@@ -129,28 +129,37 @@ function analysisRouteConfig(filepath){
     let routePath = rePath.replace("/"+_config.pagePath,"").replace(".vue",""); // 路由路径
     let routePathArr = routePath.split("/"); // 相对路径转数组
     let res = {};
-    // 没有配置config的情况 or 没有配置route
-    if (!config || !config.route){
-        res = {
-            path:routePath
-        }
-    }else if(config.route){
-        if (config.route.path){ // 有path的情况
-            res = config.route;
-        }else if (config.route.name != null){ // 没有path 有name的情况
+    const setRoute = (r)=>{
+        let res = null;
+        if(!r){
+            res = {
+                path:routePath
+            }
+        }else if (r.path){ // 有path的情况
+            res = r;
+        }else if (r.name != null){ // 没有path 有name的情况
             let len = routePathArr.length;
-            routePathArr[len - 1] = encodeURI(config.route.name);
+            routePathArr[len - 1] = encodeURI(r.name);
             if (routePathArr[len-1] === "")routePathArr.pop();
             res = Object.assign({
                 path:routePathArr.join("/")
-            },config.route);
+            },r);
         }else
             res = Object.assign({
                 path:routePath
-            },config.route);
+            },r);
+        res["component"] = `$[()=>import('@${rePath}')]$`;
+        return JSON.stringify(res).replace('"$[', "").replace(']$"', "");
     }
-    res["component"] = `$[()=>import('@${rePath}')]$`;
-    return JSON.stringify(res).replace('"$[', "").replace(']$"', "");
+    // 没有配置config的情况 or 没有配置route
+    if (!config || !config.route){
+        return setRoute(null);
+    }else if(config.route){
+        if(Array.isArray(config.route)){
+
+        }
+
+    }
 }
 /**
  * @desc 写入路由
