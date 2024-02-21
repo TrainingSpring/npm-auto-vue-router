@@ -1,6 +1,6 @@
 {
   "name": "auto-router-vue3",
-  "version": "1.3.8",
+  "version": "1.3.10",
   "description": "生成router, 基于vue",
   "main": "libs/cjs/index.js",
   "module": "libs/es/index.mjs",

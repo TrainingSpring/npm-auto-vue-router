@@ -148,7 +148,7 @@ function analysisRouteConfig(filepath) {
   var rePath = filepath.replace(pages, "/" + _config.pagePath).replaceAll("\\", "/"); // 相对路径
   var routePath = rePath.replace("/" + _config.pagePath, "").replace(".vue", ""); // 路由路径
   var routePathArr = routePath.split("/"); // 相对路径转数组
-  var res = {};
+  var res = "";
   var setRoute = function setRoute(r) {
     var res = null;
     if (!r) {
@@ -176,7 +176,14 @@ function analysisRouteConfig(filepath) {
   if (!config || !config.route) {
     return setRoute(null);
   } else if (config.route) {
-    if (Array.isArray(config.route)) {}
+    if (Array.isArray(config.route)) {
+      var result = [];
+      config.route.forEach(function (item) {
+        result.push(setRoute(item));
+      });
+      res = result.join(",");
+    } else res = setRoute(config.route);
+    return res;
   }
 }
 /**
