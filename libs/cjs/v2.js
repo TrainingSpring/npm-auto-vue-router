@@ -76,6 +76,7 @@ function analysisRouteConfig(callback, dir) {
     if (status !== 1 && status !== 0) return;
     if (timer) {
       clearTimeout(timer);
+      timer = null;
     }
     var res = null;
     var data = null;
@@ -386,6 +387,7 @@ function watchPages() {
   var config = (0, _comm.getConfig)();
   var dir = _path["default"].join(__dir, "src", config.pagePath);
   var exclude = config.excludeReg ? new RegExp(config.excludeReg) : null;
+  var timer = null;
   _watch["default"].watchTree(dir, {
     interval: 1,
     ignoreDotFiles: true,
@@ -393,15 +395,18 @@ function watchPages() {
     ignoreNotPermitted: true,
     ignoreDirectoryPattern: exclude
   }, function (f, cur, prev) {
-    if (typeof f == 'string' && (/(component|utils)/.test(f) || /~$/.test(f))) return;
-    if (_typeof(f) == "object" && prev === null && cur === null) {
-      renderAll();
-      // 完成对树的遍历
-    } else {
+    if (typeof f == 'string') {
       var check = (0, _comm.excludeCheck)(f);
       if (check.flag) return;
-      // f 被移除 或者更名等
-      renderAll();
+      if (exclude.test(f) || /~$/.test(f)) return;
     }
+    // 过滤重复调用
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    timer = setTimeout(function () {
+      renderAll();
+    }, 50);
   });
 }

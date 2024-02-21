@@ -69,6 +69,7 @@ function analysisRouteConfig(callback,dir,initResult=null){
 
         if (timer){
             clearTimeout(timer);
+            timer = null;
         }
         let res = null;
         let data = null;
@@ -371,6 +372,7 @@ export function watchPages(){
     let config = getConfig();
     let dir = path.join(__dir,"src",config.pagePath);
     let exclude = config.excludeReg?new RegExp(config.excludeReg):null;
+    let timer = null;
     watch.watchTree(dir,{
         interval:1,
         ignoreDotFiles:true,
@@ -378,15 +380,18 @@ export function watchPages(){
         ignoreNotPermitted:true,
         ignoreDirectoryPattern:exclude
     },function (f,cur,prev) {
-        if (typeof f =='string' && (/(component|utils)/.test(f) || /~$/.test(f)))return;
-        if (typeof f == "object" && prev === null && cur === null) {
-            renderAll()
-            // 完成对树的遍历
-        } else {
+        if (typeof f =='string'){
             let check = excludeCheck(f);
             if (check.flag)return;
-            // f 被移除 或者更名等
-            renderAll()
+            if ((exclude.test(f) || /~$/.test(f)))return;
         }
+        // 过滤重复调用
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+        timer = setTimeout(()=>{
+            renderAll();
+        },50)
     })
 }
