@@ -7,7 +7,7 @@ exports.analysisVue = analysisVue;
 exports.getConfigStr = getConfigStr;
 exports.loopDir = loopDir;
 exports.renderAll = renderAll;
-exports.vitePluginVueAutoRouter = vitePluginVueAutoRouter;
+exports.updateConfigInfo = updateConfigInfo;
 exports.watchPages = watchPages;
 exports.writeRouter = writeRouter;
 var _compilerSfc = require("vue/compiler-sfc");
@@ -35,6 +35,10 @@ var pages = _path["default"].join(__dir, "/src", _config.pagePath);
 var files;
 var routeDir = _path["default"].join(__dir, "src/router");
 var ignoreDirs = /(components|utils)/;
+function updateConfigInfo() {
+  _config = (0, _comm.getConfig)();
+  pages = _path["default"].join(__dir, "/src", _config.pagePath);
+}
 
 /**
  * @desc 递归遍历文件夹及文件 并做相应的处理
@@ -133,7 +137,7 @@ function analysisVue(filepath) {
       return new Function("return {".concat(strCfg, "}"))()._config;
     }
   } catch (e) {
-    console.log("error");
+    console.log("analysis vue is null");
     return null;
   }
 }
@@ -181,7 +185,7 @@ function analysisRouteConfig(filepath) {
       config.route.forEach(function (item) {
         result.push(setRoute(item));
       });
-      res = result.join(",");
+      res = result.join(",\n");
     } else res = setRoute(config.route);
     return res;
   }
@@ -223,7 +227,7 @@ var CURD = /*#__PURE__*/function () {
     key: "update",
     value: function update(filePath) {
       var _routesInfo$filePath$;
-      console.log("filePath", filePath);
+      console.log("\n [auto-router] update rending...");
       var prev = (_routesInfo$filePath$ = routesInfo[filePath]["data"]) === null || _routesInfo$filePath$ === void 0 ? void 0 : _routesInfo$filePath$.replace(/(\n)/g, "");
       var cur = analysisRouteConfig(filePath);
       var cur_cs = cur.replace(/(\n)/g, "");
@@ -232,7 +236,7 @@ var CURD = /*#__PURE__*/function () {
         routes[index] = cur;
         routesInfo[filePath]["data"] = cur;
         writeRouter();
-        console.log("[auto-router] update:", filePath);
+        console.log("[auto-router] updated:", filePath);
       }
     }
     /**
@@ -243,6 +247,7 @@ var CURD = /*#__PURE__*/function () {
   }, {
     key: "delete",
     value: function _delete(filePath, cur) {
+      console.log("\n [auto-router] delete rending...");
       var keys = Object.keys(routesInfo);
       for (var _i = 0, _keys = keys; _i < _keys.length; _i++) {
         var key = _keys[_i];
@@ -254,7 +259,7 @@ var CURD = /*#__PURE__*/function () {
         }
       }
       writeRouter();
-      console.log("[auto-router] delete:", filePath);
+      console.log("[auto-router] deleted:", filePath);
     }
 
     /**
@@ -266,6 +271,7 @@ var CURD = /*#__PURE__*/function () {
     key: "create",
     value: function create(filePath, cur) {
       var _this = this;
+      console.log("\n [auto-router] create rending...");
       var res = this._baseLogic(filePath, cur);
       if (!res) return;
       res.forEach(function (item) {
@@ -286,7 +292,7 @@ var CURD = /*#__PURE__*/function () {
         }
       });
       writeRouter();
-      console.log("[auto-router] create:", filePath);
+      console.log("\n [auto-router] created:", filePath);
     }
 
     /**
@@ -377,7 +383,7 @@ function watchPages() {
 }
 // 全部渲染pages
 function renderAll() {
-  console.log("render all ...");
+  console.log("\n[auto-router]rending ...");
   try {
     files = _fs["default"].readdirSync(pages);
   } catch (e) {
@@ -385,21 +391,5 @@ function renderAll() {
   }
   loopDir(files, pages); // 轮询目录 , 生成route配置
   writeRouter(); // 文件写入
-}
-// vite插件
-function vitePluginVueAutoRouter() {
-  var _config2, command;
-  return {
-    name: "auto-router",
-    enforce: 'pre',
-    configResolved: function configResolved(resolvedConfig) {
-      _config2 = resolvedConfig;
-      console.log(command);
-      if (command !== "build") watchPages();else renderAll();
-    },
-    config: function config(cfg, arg) {
-      _config2 = cfg;
-      command = arg.command;
-    }
-  };
+  console.log("\n[auto-router]render finished ...");
 }

@@ -4,18 +4,23 @@ import fs from "fs"
 import watch from "watch"
 import {getConfig, getSrcInfo, GUID,basename} from "./comm.mjs";
 
-const _config = getConfig();
+let _config = getConfig();
 const dirInfo = getSrcInfo();
 const __filename = dirInfo.filename; // 当前文件路径
 const __dirname = dirInfo.dirname; // 当前文件所处的文件夹路径
 const __dir = dirInfo.dir;   // 执行命令时的路径
-const pages = path.join(__dir, "/src",_config.pagePath);
+let pages = path.join(__dir, "/src",_config.pagePath);
 let files;
 
 
 const routeDir = path.join(__dir,"src/router");
 const ignoreDirs = /(components|utils)/;
 
+
+export function updateConfigInfo(){
+    _config = getConfig();
+    pages = path.join(__dir, "/src",_config.pagePath);
+}
 
 /**
  * @desc 递归遍历文件夹及文件 并做相应的处理
@@ -112,7 +117,7 @@ export function analysisVue(filepath) {
             return (new Function(`return {${strCfg}}`))()._config;
         }
     }catch (e){
-        console.log("error")
+        console.log("analysis vue is null")
         return null;
     }
 
@@ -195,7 +200,7 @@ class CURD{
      * @param filePath
      */
     update(filePath) {
-        console.log("filePath",filePath);
+        console.log("\n [auto-router] update rending...");
         let prev = routesInfo[filePath]["data"]?.replace(/(\n)/g,"");
         let cur = analysisRouteConfig(filePath);
         let cur_cs = cur.replace(/(\n)/g,"");
@@ -204,7 +209,7 @@ class CURD{
             routes[index] = cur;
             routesInfo[filePath]["data"] = cur;
             writeRouter();
-            console.log("[auto-router] update:",filePath);
+            console.log("[auto-router] updated:",filePath);
         }
     }
     /**
@@ -213,6 +218,7 @@ class CURD{
      * @param cur
      */
     delete(filePath,cur){
+        console.log("\n [auto-router] delete rending...");
         let keys = Object.keys(routesInfo);
         for (let key of keys){
             if (key.indexOf(filePath) > -1){
@@ -223,7 +229,7 @@ class CURD{
             }
         }
         writeRouter();
-        console.log("[auto-router] delete:",filePath);
+        console.log("[auto-router] deleted:",filePath);
     }
 
     /**
@@ -232,6 +238,7 @@ class CURD{
      * @param cur
      */
     create(filePath,cur){
+        console.log("\n [auto-router] create rending...");
         const res = this._baseLogic(filePath,cur);
         if (!res)return;
         res.forEach(item=>{
@@ -255,7 +262,7 @@ class CURD{
         })
 
         writeRouter();
-        console.log("[auto-router] create:",filePath);
+        console.log("\n [auto-router] created:",filePath);
     }
 
     /**
@@ -336,7 +343,7 @@ export function watchPages(){
 }
 // 全部渲染pages
 export function renderAll() {
-    console.log("render all ...")
+    console.log("\n[auto-router]rending ...")
     try {
         files = fs.readdirSync(pages);
     }catch (e){
@@ -344,24 +351,5 @@ export function renderAll() {
     }
     loopDir(files,pages); // 轮询目录 , 生成route配置
     writeRouter(); // 文件写入
-}
-// vite插件
-export function vitePluginVueAutoRouter(){
-    let config,command;
-    return {
-        name:"auto-router",
-        enforce: 'pre',
-        configResolved(resolvedConfig) {
-            config = resolvedConfig;
-            console.log(command)
-            if (command !== "build")
-                watchPages();
-            else
-                renderAll();
-        },
-        config(cfg, arg){
-            config = cfg;
-            command = arg.command;
-        }
-    }
+    console.log("\n[auto-router]render finished ...")
 }

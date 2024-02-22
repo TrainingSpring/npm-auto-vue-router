@@ -9,6 +9,13 @@ const __filename = dirInfo.filename; // 当前文件路径
 const __dirname = dirInfo.dirname; // 当前文件所处的文件夹路径
 const __dir = dirInfo.dir;
 const routeDir = path.join(__dir,"src/router");
+let _config = getConfig(); // 获取配置
+let pagePath = path.join(__dir, "/src",_config.pagePath);
+
+export function updateConfigInfo(){
+    _config = getConfig();
+    pagePath = path.join(__dir, "/src",_config.pagePath);
+}
 
 /**
  *  将驼峰转换为中划线
@@ -59,10 +66,8 @@ const defaultPre = "$$default$$";
 function analysisRouteConfig(callback,dir,initResult=null){
     let routes = [];
     let timer = null;
-    let config = getConfig();
-    let defaultRedirect = new RegExp(config.defaultRedirect || "^list$");
+    let defaultRedirect = new RegExp(_config.defaultRedirect || "^list$");
     let map = {};
-    let pagePath = path.join(__dir,"src",config.pagePath);
     dir = dir || pagePath;
     traverseFolder(dir,function(status,info,fullPath,result){
         if (status !== 1 && status !== 0)return ;
@@ -123,7 +128,7 @@ function analysisRouteConfig(callback,dir,initResult=null){
                 // 当路由配置为被排除 ， 则不执行后续操作
                 if (route.exclude)return result;
                 let child = {};
-                let rePath = fullPath.replace(dir,path.join("/",config.pagePath)).replaceAll("\\","/");
+                let rePath = fullPath.replace(dir,path.join("/",_config.pagePath)).replaceAll("\\","/");
 
                 child = {
                     ...route,
@@ -174,6 +179,7 @@ class CURD{
     }
     _getConfig(){
         this.sysConfig = getConfig();
+        this.pagePath = path.join(__dir, "/src",this.sysConfig.pagePath);
     }
 
     _each(route,filename,parent){
@@ -202,7 +208,7 @@ class CURD{
     getPath(src,child=""){
         let parentDir = path.dirname(src);
         let config = getJsonFile(path.join(src,"route.json"));
-        let root = path.join(__dir,"src",this.sysConfig.pagePath);
+        let root = this.pagePath;
         if (root === src){
             return "/"+child;
         }
@@ -240,7 +246,7 @@ class CURD{
         let route = null;
         let info = this._getFileInfo(filename);
         if (type === 1){
-            let pagePath = path.join(__dir,"src",this.sysConfig.pagePath);
+            let pagePath = this.pagePath;
             route = analysisVue(filename);
             route = route?route.route:null;
             let pp = this.getPath(info.dir)
@@ -302,7 +308,7 @@ class CURD{
             }
             fs.writeFileSync(path.join(dataDir,"map.json"),JSON.stringify(map),{encoding:"utf-8"});
             fs.writeFileSync(path.join(dataDir,"route.json"),JSON.stringify(route),{encoding:"utf-8"});
-            console.log("[auto-router] update:",filename);
+            console.log("\n[auto-router] update:",filename);
         });
     }
 }
@@ -323,9 +329,7 @@ function writeRoute(content,extra=""){
 }
 
 function handleVueFile(){
-    let config = getConfig();
-    let dir = path.join(__dir,"src",config.pagePath);
-    traverseFolder(dir,function(status,info,fullPath,result){
+    traverseFolder(pagePath,function(status,info,fullPath,result){
         if (status === 1){
             let p = camelToDash(fullPath.split("\\").pop().replace(".vue",""));
             let cfgStr = getConfigStr(fs.readFileSync(fullPath,{encoding:"utf-8"}))||"";
@@ -350,7 +354,7 @@ function handleRoutes(routes){
 }
 
 export function renderAll(){
-    console.log("[auto-router]: 正在渲染路由...");
+    console.log("\n[auto-router]: 正在渲染路由...");
     analysisRouteConfig((routes,map)=>{
         let str = handleRoutes(routes);
 
@@ -360,7 +364,7 @@ export function renderAll(){
         // fs.writeFileSync(path.join(dataPath,"route.json"),JSON.stringify(routes),{encoding:"utf-8"});
         // fs.writeFileSync(path.join(dataPath,"map.json"),JSON.stringify(map),{encoding:"utf-8"});
         writeRoute(str,routeConfig);
-        console.log("[auto-router]: 渲染完成!!!");
+        console.log("\n[auto-router]: 渲染完成!!!");
     })
 }
 
@@ -369,11 +373,9 @@ export function renderAll(){
  */
 export function watchPages(){
     let curd = new CURD();
-    let config = getConfig();
-    let dir = path.join(__dir,"src",config.pagePath);
-    let exclude = config.excludeReg?new RegExp(config.excludeReg):null;
+    let exclude = _config.excludeReg?new RegExp(_config.excludeReg):null;
     let timer = null;
-    watch.watchTree(dir,{
+    watch.watchTree(pagePath,{
         interval:1,
         ignoreDotFiles:true,
         ignoreUnreadableDir:true,

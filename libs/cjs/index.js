@@ -36,6 +36,7 @@ function getModel(options) {
   if (c && c.type === "complex") {
     model = v2;
   }
+  model.updateConfigInfo();
   return {
     config: config,
     model: model

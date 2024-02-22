@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.renderAll = renderAll;
+exports.updateConfigInfo = updateConfigInfo;
 exports.watchPages = watchPages;
 var _path = _interopRequireDefault(require("path"));
 var _fs = _interopRequireDefault(require("fs"));
@@ -25,6 +26,12 @@ var _filename = dirInfo.filename; // 当前文件路径
 var _dirname = dirInfo.dirname; // 当前文件所处的文件夹路径
 var __dir = dirInfo.dir;
 var routeDir = _path["default"].join(__dir, "src/router");
+var _config = (0, _comm.getConfig)(); // 获取配置
+var pagePath = _path["default"].join(__dir, "/src", _config.pagePath);
+function updateConfigInfo() {
+  _config = (0, _comm.getConfig)();
+  pagePath = _path["default"].join(__dir, "/src", _config.pagePath);
+}
 
 /**
  *  将驼峰转换为中划线
@@ -67,10 +74,8 @@ function analysisRouteConfig(callback, dir) {
   var initResult = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
   var routes = [];
   var timer = null;
-  var config = (0, _comm.getConfig)();
-  var defaultRedirect = new RegExp(config.defaultRedirect || "^list$");
+  var defaultRedirect = new RegExp(_config.defaultRedirect || "^list$");
   var map = {};
-  var pagePath = _path["default"].join(__dir, "src", config.pagePath);
   dir = dir || pagePath;
   (0, _comm.traverseFolder)(dir, function (status, info, fullPath, result) {
     if (status !== 1 && status !== 0) return;
@@ -123,7 +128,7 @@ function analysisRouteConfig(callback, dir) {
         // 当路由配置为被排除 ， 则不执行后续操作
         if (route.exclude) return result;
         var child = {};
-        var rePath = fullPath.replace(dir, _path["default"].join("/", config.pagePath)).replaceAll("\\", "/");
+        var rePath = fullPath.replace(dir, _path["default"].join("/", _config.pagePath)).replaceAll("\\", "/");
         child = _objectSpread(_objectSpread({}, route), {}, {
           component: "$[()=>import('@".concat(rePath, "')]$")
         });
@@ -171,6 +176,7 @@ var CURD = /*#__PURE__*/function () {
     key: "_getConfig",
     value: function _getConfig() {
       this.sysConfig = (0, _comm.getConfig)();
+      this.pagePath = _path["default"].join(__dir, "/src", this.sysConfig.pagePath);
     }
   }, {
     key: "_each",
@@ -206,7 +212,7 @@ var CURD = /*#__PURE__*/function () {
       var child = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
       var parentDir = _path["default"].dirname(src);
       var config = (0, _comm.getJsonFile)(_path["default"].join(src, "route.json"));
-      var root = _path["default"].join(__dir, "src", this.sysConfig.pagePath);
+      var root = this.pagePath;
       if (root === src) {
         return "/" + child;
       }
@@ -249,7 +255,7 @@ var CURD = /*#__PURE__*/function () {
       var route = null;
       var info = this._getFileInfo(filename);
       if (type === 1) {
-        var pagePath = _path["default"].join(__dir, "src", this.sysConfig.pagePath);
+        var _pagePath = this.pagePath;
         route = (0, _v.analysisVue)(filename);
         route = route ? route.route : null;
         var pp = this.getPath(info.dir);
@@ -261,7 +267,7 @@ var CURD = /*#__PURE__*/function () {
         } else if (route.path[0] !== "/") {
           route.path = _path["default"].posix.join(pp, route.path);
         }
-        var rePath = filename.replace(pagePath, _path["default"].join("/", this.sysConfig.pagePath)).replaceAll("\\", "/");
+        var rePath = filename.replace(_pagePath, _path["default"].join("/", this.sysConfig.pagePath)).replaceAll("\\", "/");
         route.component = "$[()=>import('@".concat(rePath, "')]$");
         if (this.isSame(route, prevCfg.item)) {
           callback(null);
@@ -312,7 +318,7 @@ var CURD = /*#__PURE__*/function () {
         _fs["default"].writeFileSync(_path["default"].join(dataDir, "route.json"), JSON.stringify(route), {
           encoding: "utf-8"
         });
-        console.log("[auto-router] update:", filename);
+        console.log("\n[auto-router] update:", filename);
       });
     }
   }]);
@@ -341,9 +347,7 @@ function writeRoute(content) {
   });
 }
 function handleVueFile() {
-  var config = (0, _comm.getConfig)();
-  var dir = _path["default"].join(__dir, "src", config.pagePath);
-  (0, _comm.traverseFolder)(dir, function (status, info, fullPath, result) {
+  (0, _comm.traverseFolder)(pagePath, function (status, info, fullPath, result) {
     if (status === 1) {
       var p = camelToDash(fullPath.split("\\").pop().replace(".vue", ""));
       var cfgStr = (0, _v.getConfigStr)(_fs["default"].readFileSync(fullPath, {
@@ -367,7 +371,7 @@ function handleRoutes(routes) {
   .replaceAll("{","{\n");*/
 }
 function renderAll() {
-  console.log("[auto-router]: 正在渲染路由...");
+  console.log("\n[auto-router]: 正在渲染路由...");
   analysisRouteConfig(function (routes, map) {
     var str = handleRoutes(routes);
     var dataPath = _path["default"].join(_comm.basename, "data");
@@ -375,7 +379,7 @@ function renderAll() {
     // fs.writeFileSync(path.join(dataPath,"route.json"),JSON.stringify(routes),{encoding:"utf-8"});
     // fs.writeFileSync(path.join(dataPath,"map.json"),JSON.stringify(map),{encoding:"utf-8"});
     writeRoute(str, routeConfig);
-    console.log("[auto-router]: 渲染完成!!!");
+    console.log("\n[auto-router]: 渲染完成!!!");
   });
 }
 
@@ -384,11 +388,9 @@ function renderAll() {
  */
 function watchPages() {
   var curd = new CURD();
-  var config = (0, _comm.getConfig)();
-  var dir = _path["default"].join(__dir, "src", config.pagePath);
-  var exclude = config.excludeReg ? new RegExp(config.excludeReg) : null;
+  var exclude = _config.excludeReg ? new RegExp(_config.excludeReg) : null;
   var timer = null;
-  _watch["default"].watchTree(dir, {
+  _watch["default"].watchTree(pagePath, {
     interval: 1,
     ignoreDotFiles: true,
     ignoreUnreadableDir: true,
