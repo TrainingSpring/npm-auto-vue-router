@@ -81,9 +81,10 @@ function getConfigStr(content) {
   var lc = 0;
   var power = false;
   var strCfg = "";
-  var configReg = setup ? /_config\s*=\s*/ : /_config\s*:\s*/;
+  var configReg = setup ? /_config\s*(:\s*\w+)?\s*=\s*/ : /_config\s*:\s*/;
   // 获取_config配置
   try {
+    if (setup) content = content.replace(configReg, "_config = ");
     content.split("\n").forEach(function (item) {
       // _config 字段
       if (!power && configReg.test(item)) {
